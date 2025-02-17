@@ -1,0 +1,87 @@
+# coding:utf-8
+
+from errno import EINVAL
+from typing import Optional
+from typing import Sequence
+
+from xkits import add_command
+from xkits import argp
+from xkits import commands
+from xkits import run_command
+
+from .attribute import __urlhome__
+from .attribute import __version__
+from .password import Argon2Hasher
+
+DEFAULT_FILE = ".pwhashed"
+
+
+def get_password(password: Optional[str] = None) -> str:
+    if password is None:
+        password = input("password: ")
+    return password
+
+
+@add_command("verify", description="verify password")
+def add_cmd_verify(_arg: argp):
+    _arg.add_argument("--hash", dest="password_hash", metavar="FILE", default=DEFAULT_FILE,  # noqa:E501
+                      help=f"encoded hash file, default is '{DEFAULT_FILE}'")
+    _arg.add_argument(dest="password", metavar="TEXT", nargs="?",
+                      help="password plaintext, default secure input via dialog")  # noqa:E501
+
+
+@run_command(add_cmd_verify)
+def run_cmd_verify(cmds: commands) -> int:
+    password: str = get_password(cmds.args.password)
+    password_hash: str = cmds.args.password_hash
+    with open(password_hash, "r") as rhdl:
+        hashed: str = rhdl.read().strip()
+    if not Argon2Hasher(hashed).verify(password):
+        cmds.stderr_red("password mismatch")
+        return EINVAL
+    cmds.stdout_green("password match")
+    return 0
+
+
+@add_command("encode", description="compute encoded hash")
+def add_cmd_encode(_arg: argp):
+    _arg.add_argument("--store", dest="password_hash", metavar="FILE", nargs="?", const=DEFAULT_FILE,  # noqa:E501
+                      help=f"store encoded hash to file, default is '{DEFAULT_FILE}'")  # noqa:E501
+    _arg.add_argument("--password", dest="password", metavar="TEXT",
+                      help="password plaintext, default secure input via dialog")  # noqa:E501
+    _arg.add_argument(dest="password_salt", metavar="SALT", nargs="?",
+                      help="password salt, default is random value")
+
+
+@run_command(add_cmd_encode)
+def run_cmd_encode(cmds: commands) -> int:
+    password: str = get_password(cmds.args.password)
+    password_salt: Optional[str] = cmds.args.password_salt
+    password_hash: Optional[str] = cmds.args.password_hash
+    hasher: Argon2Hasher = Argon2Hasher.hash(
+        password=password, salt=password_salt,
+        time_cost=16, memory_cost=65536, parallelism=8,
+        hash_len=64, salt_len=32)
+    if isinstance(password_hash, str):
+        with open(password_hash, "w") as whdl:
+            cmds.stdout(f"store encoded hash to file: {password_hash}")
+            whdl.write(hasher.hashed)
+    else:
+        cmds.stdout(hasher.hashed)
+    return 0
+
+
+@add_command("pwhasher", description="compute encoded hash or verify password")
+def add_cmd(_arg: argp):
+    pass
+
+
+@run_command(add_cmd, add_cmd_encode, add_cmd_verify)
+def run_cmd(cmds: commands) -> int:
+    return 0
+
+
+def main(argv: Optional[Sequence[str]] = None) -> int:
+    cmds = commands()
+    cmds.version = __version__
+    return cmds.run(root=add_cmd, argv=argv, epilog=f"For more, please visit {__urlhome__}.")  # noqa:E501
