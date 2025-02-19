@@ -11,7 +11,7 @@ from ldap3 import Entry
 from ldap3 import Server
 
 
-class LdapAuth:
+class LdapClient:
     def __init__(self, server: Server, username: str, password: str):
         self.__server: Server = server
         self.__bind_dn: str = username
@@ -58,8 +58,8 @@ class LdapInit:
     def __init__(self, host: str, port: Optional[int] = None, use_ssl: bool = False):  # noqa:E501
         self.__server: Server = Server(host=host, port=port, use_ssl=use_ssl, get_info=ALL)  # noqa:E501
 
-    def bind(self, username: str, password: str) -> LdapAuth:
-        return LdapAuth(self.__server, username, password)
+    def bind(self, username: str, password: str) -> LdapClient:
+        return LdapClient(self.__server, username, password)
 
     @classmethod
     def from_url(cls, url: str) -> "LdapInit":

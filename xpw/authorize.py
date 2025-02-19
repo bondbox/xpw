@@ -59,9 +59,9 @@ class LdapAuth(BasicAuth):
     def verify(self, username: str, password: Optional[str] = None) -> Optional[str]:  # noqa:E501
         try:
             config: LdapConfig = self.config
-            entry = config.auth.signed(config.base_dn, config.filter,
-                                       config.attributes, username,
-                                       password or input("password: "))
+            entry = config.client.signed(config.base_dn, config.filter,
+                                         config.attributes, username,
+                                         password or input("password: "))
             if entry:
                 return entry.entry_dn
         except Exception:

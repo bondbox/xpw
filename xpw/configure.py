@@ -6,7 +6,7 @@ from typing import List
 
 from toml import load
 
-from .ldapauth import LdapAuth
+from .ldapauth import LdapClient
 from .ldapauth import LdapInit
 from .password import Argon2Hasher
 
@@ -107,5 +107,5 @@ class LdapConfig(BasicConfig):
         return self.datas[self.TYPE]["attributes"]
 
     @property
-    def auth(self) -> LdapAuth:
+    def client(self) -> LdapClient:
         return LdapInit(self.server).bind(self.bind_dn, self.bind_pw)
