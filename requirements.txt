@@ -1,3 +1,4 @@
 xkits >= 2.2.0
 argon2-cffi
 ldap3
+toml
