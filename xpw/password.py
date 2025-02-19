@@ -1,6 +1,13 @@
 # coding:utf-8
 
+from enum import IntEnum
+from enum import auto  # noqa:H306
 from os import urandom
+import random
+import secrets
+import string
+from typing import Iterable
+from typing import Optional
 from typing import Union
 
 from argon2 import PasswordHasher
@@ -30,6 +37,103 @@ class Secret():
     def key(self) -> str:
         """secret key"""
         return self.__key
+
+
+class Pass():
+    """Password object"""
+    MIN_LENGTH: int = 4  # minimum password length
+
+    class CharacterSet(IntEnum):
+        DIGITS = auto()
+        LOWERCASE = auto()
+        UPPERCASE = auto()
+        PUNCTUATION = auto()
+        LETTERS = LOWERCASE | UPPERCASE
+        DEFAULT = DIGITS | LETTERS | PUNCTUATION
+        BASIC = LOWERCASE | DIGITS
+    Characters = Union[str, CharacterSet]  # password characters type
+    SUPERSET = string.digits + string.ascii_letters + string.punctuation
+
+    class PasswordError(ValueError):
+        def __init__(self, message: str):
+            super().__init__(message)
+
+    class MismatchError(PasswordError):
+        def __init__(self):
+            super().__init__("password mismatch")
+
+    class TooShortError(PasswordError):
+        def __init__(self, length: int):
+            super().__init__(f"password length {length} must be greater than {Pass.MIN_LENGTH}")  # noqa:E501
+
+    class IllegalCharacterError(PasswordError):
+        def __init__(self, char: str):
+            super().__init__(f"password contains illegal character: {char}")
+
+    def __init__(self, value: str):
+        self.check(value, throw=True)
+        self.__value: str = value
+
+    def __eq__(self, other: Union["Pass", str]) -> bool:
+        return self.match(other) if isinstance(other, (Pass, str)) else False
+
+    @property
+    def value(self) -> str:
+        """password"""
+        return self.__value
+
+    @classmethod
+    def join(cls, chars: Union[str, Iterable[str]]) -> str:
+        """filter out non characters(digits, letters and punctuation)"""
+        return "".join([c for c in chars if c in cls.SUPERSET])
+
+    @classmethod
+    def check(cls, password: str, throw: bool = False) -> bool:
+        """check password is valid"""
+        length: int = len(password)
+        if length < cls.MIN_LENGTH:
+            if throw:
+                raise cls.TooShortError(length)
+            return False
+        for c in password:
+            if c not in cls.SUPERSET:
+                if throw:
+                    raise cls.IllegalCharacterError(c)
+                return False
+        return True
+
+    def match(self, password: Union["Pass", str], throw: bool = False) -> bool:
+        """verify password is match"""
+        if isinstance(password, Pass):
+            password = password.value
+        match: bool = self.value == password
+        if throw and not match:
+            raise self.MismatchError()
+        return match
+
+    @classmethod
+    def get_character_set(cls, chars: Characters = CharacterSet.DEFAULT) -> str:  # noqa:E501
+        if isinstance(chars, str):
+            return cls.join(set(chars))
+
+        characters: str = ""
+        if chars & cls.CharacterSet.DIGITS:
+            characters += string.digits
+        if chars & cls.CharacterSet.LOWERCASE:
+            characters += string.ascii_lowercase
+        if chars & cls.CharacterSet.UPPERCASE:
+            characters += string.ascii_uppercase
+        if chars & cls.CharacterSet.PUNCTUATION:
+            characters += string.punctuation
+        return characters
+
+    @classmethod
+    def random_generate(cls, length: Optional[int] = None, chars: Characters = CharacterSet.DEFAULT) -> "Pass":  # noqa:E501
+        "generate a random secret key"
+        characters: str = cls.get_character_set(chars)
+        number: int = max(cls.MIN_LENGTH, length or random.randint(32, 64))
+        password: str = cls.join(secrets.choice(characters) for _ in range(number))  # noqa:E501
+        return cls(password)
 
 
 class Salt():
