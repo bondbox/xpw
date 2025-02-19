@@ -2,9 +2,12 @@
 
 from typing import Any
 from typing import Dict
+from typing import List
 
 from toml import load
 
+from .ldapauth import LdapAuth
+from .ldapauth import LdapInit
 from .password import Argon2Hasher
 
 CONFIG_DATA_TYPE = Dict[str, Any]
@@ -70,3 +73,39 @@ class Argon2Config(BasicConfig):
                                  parallelism=self.parallelism,
                                  hash_len=self.hash_len,
                                  salt_len=self.salt_len)
+
+
+class LdapConfig(BasicConfig):
+    TYPE = "ldap"
+
+    def __init__(self, datas: CONFIG_DATA_TYPE):
+        datas.setdefault(self.TYPE, {})
+        super().__init__(datas)
+
+    @property
+    def server(self) -> str:
+        return self.datas[self.TYPE]["server"]
+
+    @property
+    def bind_dn(self) -> str:
+        return self.datas[self.TYPE]["bind_username"]
+
+    @property
+    def bind_pw(self) -> str:
+        return self.datas[self.TYPE]["bind_password"]
+
+    @property
+    def base_dn(self) -> str:
+        return self.datas[self.TYPE]["base_dn"]
+
+    @property
+    def filter(self) -> str:
+        return self.datas[self.TYPE]["filter"]
+
+    @property
+    def attributes(self) -> List[str]:
+        return self.datas[self.TYPE]["attributes"]
+
+    @property
+    def auth(self) -> LdapAuth:
+        return LdapInit(self.server).bind(self.bind_dn, self.bind_pw)
