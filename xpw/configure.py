@@ -96,15 +96,15 @@ class LdapConfig(BasicConfig):
 
     @property
     def base_dn(self) -> str:
-        return self.datas[self.TYPE]["base_dn"]
+        return self.datas[self.TYPE]["search_base"]
 
     @property
     def filter(self) -> str:
-        return self.datas[self.TYPE]["filter"]
+        return self.datas[self.TYPE]["search_filter"]
 
     @property
     def attributes(self) -> List[str]:
-        return self.datas[self.TYPE]["attributes"]
+        return self.datas[self.TYPE]["search_attributes"]
 
     @property
     def client(self) -> LdapClient:
