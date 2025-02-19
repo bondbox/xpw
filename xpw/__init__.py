@@ -1,5 +1,6 @@
 # coding:utf-8
 
+from .authorize import AuthInit  # noqa:F401
 from .configure import Argon2Config  # noqa:F401
 from .ldapauth import LdapAuth  # noqa:F401
 from .ldapauth import LdapInit  # noqa:F401
