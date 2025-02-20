@@ -33,7 +33,7 @@ def add_cmd_verify(_arg: argp):
 def run_cmd_verify(cmds: commands) -> int:
     password: Pass = get_password(cmds.args.password)
     password_hash: str = cmds.args.password_hash
-    with open(password_hash, "r") as rhdl:
+    with open(password_hash, "r", encoding="utf-8") as rhdl:
         hashed: str = rhdl.read().strip()
     if not Argon2Hasher(hashed).verify(password.value):
         cmds.stderr_red("password mismatch")
@@ -62,7 +62,7 @@ def run_cmd_encode(cmds: commands) -> int:
         time_cost=16, memory_cost=65536, parallelism=8,
         hash_len=64, salt_len=32)
     if isinstance(password_hash, str):
-        with open(password_hash, "w") as whdl:
+        with open(password_hash, "w", encoding="utf-8") as whdl:
             cmds.stdout(f"store encoded hash to file: {password_hash}")
             whdl.write(hasher.hashed)
     else:
@@ -76,7 +76,7 @@ def add_cmd(_arg: argp):
 
 
 @run_command(add_cmd, add_cmd_encode, add_cmd_verify)
-def run_cmd(cmds: commands) -> int:
+def run_cmd(cmds: commands) -> int:  # pylint: disable=unused-argument
     return 0
 
 

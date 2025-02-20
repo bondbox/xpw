@@ -41,8 +41,9 @@ class Argon2Auth(BasicAuth):
             hasher: Argon2Hasher = self.config[username]
             if hasher.verify(password or input("password: ")):
                 return username
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             pass
+        return None
 
 
 class LdapAuth(BasicAuth):
@@ -64,11 +65,12 @@ class LdapAuth(BasicAuth):
                                          password or input("password: "))
             if entry:
                 return entry.entry_dn
-        except Exception:
+        except Exception:  # pylint: disable=broad-exception-caught
             pass
+        return None
 
 
-class AuthInit():
+class AuthInit():  # pylint: disable=too-few-public-methods
     METHODS = {
         Argon2Config.TYPE: Argon2Auth,
         LdapConfig.TYPE: LdapAuth,

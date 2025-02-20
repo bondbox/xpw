@@ -29,7 +29,9 @@ class LdapClient:
     def connect(cls, server: Server, username: str, password: str) -> Connection:  # noqa:E501
         return Connection(server, username, password, auto_bind=True)
 
-    def search(self, base: str, filter: str, attrs: Iterable[str], key: str) -> Optional[Entry]:  # noqa:E501
+    def search(self, base: str,
+               filter: str,  # pylint: disable=redefined-builtin
+               attrs: Iterable[str], key: str) -> Optional[Entry]:
         """search entry"""
         attributes: Set[str] = set(attrs)
         bind: Connection = self.bind
@@ -44,11 +46,14 @@ class LdapClient:
     def verify(self, username: str, password: str) -> bool:
         """verify password"""
         try:
-            return True if self.connect(self.server, username, password).bind() else False  # noqa:E501
-        except Exception:
+            return bool(self.connect(self.server, username, password).bind())
+        except Exception:  # pylint: disable=broad-exception-caught
             return False
 
-    def signed(self, base: str, filter: str, attrs: Iterable[str], username: str, password: str) -> Optional[Entry]:  # noqa:E501
+    def signed(self, base: str,  # pylint: disable=R0913,R0917
+               filter: str,  # pylint: disable=redefined-builtin
+               attrs: Iterable[str], username: str, password: str
+               ) -> Optional[Entry]:
         """search user and verify password"""
         user: Optional[Entry] = self.search(base, filter, attrs, username)
         return user if user and self.verify(user.entry_dn, password) else None

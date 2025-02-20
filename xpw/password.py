@@ -216,12 +216,14 @@ class Argon2Hasher():
             return False
 
     @classmethod
-    def hash(cls, password: str, salt: Union[str, bytes, None] = None,
+    def hash(cls, password: str,  # pylint: disable=R0913,R0917
+             salt: Union[str, bytes, None] = None,
              time_cost: int = DEFAULT_TIME_COST,
              memory_cost: int = DEFAULT_MEMORY_COST,
              parallelism: int = DEFAULT_PARALLELISM,
              hash_len: int = DEFAULT_HASH_LENGTH,
-             salt_len: int = DEFAULT_SALT_LENGTH) -> "Argon2Hasher":
+             salt_len: int = DEFAULT_SALT_LENGTH
+             ) -> "Argon2Hasher":
         return cls(hashed=PasswordHasher(
             time_cost=time_cost,
             memory_cost=memory_cost,

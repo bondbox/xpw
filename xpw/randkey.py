@@ -38,7 +38,7 @@ def add_cmd(_arg: argp):
 
 @run_command(add_cmd)
 def run_cmd(cmds: commands) -> int:
-    chr: str = cmds.args.characters
+    chr: str = cmds.args.characters  # pylint: disable=redefined-builtin
     if cmds.args.enable_digit:
         chr += string.digits
     if cmds.args.enable_letter:
@@ -49,7 +49,7 @@ def run_cmd(cmds: commands) -> int:
         chr += string.ascii_uppercase
     if cmds.args.enable_punctuation:
         chr += string.punctuation
-    len: Optional[int] = cmds.args.key_length
+    len: Optional[int] = cmds.args.key_length  # pylint: disable=W0622
     key: Pass = Pass.random_generate(len, chr)
     cmds.stdout(key.value)
     return 0
