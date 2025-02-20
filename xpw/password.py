@@ -2,10 +2,12 @@
 
 from enum import IntEnum
 from enum import auto  # noqa:H306
+from getpass import getpass
 from os import urandom
 import random
 import secrets
 import string
+import sys
 from typing import Iterable
 from typing import Optional
 from typing import Union
@@ -68,7 +70,11 @@ class Pass():
 
     class IllegalCharacterError(PasswordError):
         def __init__(self, char: str):
-            super().__init__(f"password contains illegal character: {char}")
+            super().__init__(f"password contains illegal character: '{char}'")
+
+    class MaxRetriesError(PasswordError):
+        def __init__(self, max_retry: int):
+            super().__init__(f"reached maximum retries: {max_retry}")
 
     def __init__(self, value: str):
         self.check(value, throw=True)
@@ -134,6 +140,19 @@ class Pass():
         number: int = max(cls.MIN_LENGTH, length or random.randint(32, 64))
         password: str = cls.join(secrets.choice(characters) for _ in range(number))  # noqa:E501
         return cls(password)
+
+    @classmethod
+    def dialog(cls, max_retry: int = 3) -> "Pass":
+        for sn in range(1, min(max(1, max_retry), 10) + 1):
+            try:
+                password: Pass = cls(getpass("password: "))
+                password.match(getpass("confirm: "), throw=True)
+                return password
+            except cls.PasswordError as e:
+                prompt: str = "please try again" if sn < max_retry else "too many retries"  # noqa:E501
+                sys.stderr.write(f"{sn}/{max_retry} {e}, {prompt}\n")
+                sys.stderr.flush()
+        raise cls.MaxRetriesError(max_retry)
 
 
 class Salt():

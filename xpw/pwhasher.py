@@ -12,14 +12,13 @@ from xkits import run_command
 from .attribute import __urlhome__
 from .attribute import __version__
 from .password import Argon2Hasher
+from .password import Pass
 
 DEFAULT_FILE = ".pwhashed"
 
 
-def get_password(password: Optional[str] = None) -> str:
-    if password is None:
-        password = input("password: ")
-    return password
+def get_password(password: Optional[str] = None) -> Pass:
+    return Pass.dialog() if password is None else Pass(password)
 
 
 @add_command("verify", description="verify password")
@@ -32,11 +31,11 @@ def add_cmd_verify(_arg: argp):
 
 @run_command(add_cmd_verify)
 def run_cmd_verify(cmds: commands) -> int:
-    password: str = get_password(cmds.args.password)
+    password: Pass = get_password(cmds.args.password)
     password_hash: str = cmds.args.password_hash
     with open(password_hash, "r") as rhdl:
         hashed: str = rhdl.read().strip()
-    if not Argon2Hasher(hashed).verify(password):
+    if not Argon2Hasher(hashed).verify(password.value):
         cmds.stderr_red("password mismatch")
         return EINVAL
     cmds.stdout_green("password match")
@@ -55,11 +54,11 @@ def add_cmd_encode(_arg: argp):
 
 @run_command(add_cmd_encode)
 def run_cmd_encode(cmds: commands) -> int:
-    password: str = get_password(cmds.args.password)
+    password: Pass = get_password(cmds.args.password)
     password_salt: Optional[str] = cmds.args.password_salt
     password_hash: Optional[str] = cmds.args.password_hash
     hasher: Argon2Hasher = Argon2Hasher.hash(
-        password=password, salt=password_salt,
+        password=password.value, salt=password_salt,
         time_cost=16, memory_cost=65536, parallelism=8,
         hash_len=64, salt_len=32)
     if isinstance(password_hash, str):
