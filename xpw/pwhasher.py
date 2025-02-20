@@ -17,8 +17,8 @@ from .password import Pass
 DEFAULT_FILE = ".pwhashed"
 
 
-def get_password(password: Optional[str] = None) -> Pass:
-    return Pass.dialog() if password is None else Pass(password)
+def get_password(password: Optional[str], dialog_confirm: bool) -> Pass:
+    return Pass.dialog(need_confirm=dialog_confirm) if password is None else Pass(password)  # noqa:E501
 
 
 @add_command("verify", description="verify password")
@@ -31,7 +31,7 @@ def add_cmd_verify(_arg: argp):
 
 @run_command(add_cmd_verify)
 def run_cmd_verify(cmds: commands) -> int:
-    password: Pass = get_password(cmds.args.password)
+    password: Pass = get_password(cmds.args.password, dialog_confirm=False)
     password_hash: str = cmds.args.password_hash
     with open(password_hash, "r", encoding="utf-8") as rhdl:
         hashed: str = rhdl.read().strip()
@@ -54,7 +54,7 @@ def add_cmd_encode(_arg: argp):
 
 @run_command(add_cmd_encode)
 def run_cmd_encode(cmds: commands) -> int:
-    password: Pass = get_password(cmds.args.password)
+    password: Pass = get_password(cmds.args.password, dialog_confirm=True)
     password_salt: Optional[str] = cmds.args.password_salt
     password_hash: Optional[str] = cmds.args.password_hash
     hasher: Argon2Hasher = Argon2Hasher.hash(

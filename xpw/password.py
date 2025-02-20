@@ -142,11 +142,12 @@ class Pass():
         return cls(password)
 
     @classmethod
-    def dialog(cls, max_retry: int = 3) -> "Pass":
+    def dialog(cls, max_retry: int = 3, need_confirm: bool = True) -> "Pass":
         for sn in range(1, min(max(1, max_retry), 10) + 1):
             try:
                 password: Pass = cls(getpass("password: "))
-                password.match(getpass("confirm: "), throw=True)
+                if need_confirm:  # confirm password is match
+                    password.match(getpass("confirm: "), throw=True)
                 return password
             except cls.PasswordError as e:
                 prompt: str = "please try again" if sn < max_retry else "too many retries"  # noqa:E501
