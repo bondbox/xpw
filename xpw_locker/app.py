@@ -5,7 +5,6 @@ import os
 from typing import Any
 from typing import Optional
 from urllib.parse import urljoin
-from uuid import uuid4
 
 from flask import Flask
 from flask import Response
@@ -21,9 +20,10 @@ from xlc import Segment
 
 from xpw import AuthInit
 from xpw import BasicAuth
-from xpw import Pass
+from xpw import SessionPool
 
 TARGET: str = "http://127.0.0.1:8000"
+SESSIONS: SessionPool = SessionPool()
 AUTH: BasicAuth = AuthInit.from_file()
 BASE: str = os.path.dirname(__file__)
 TEMPLATE: Template = Template(os.path.join(BASE, "resources"))
@@ -31,11 +31,7 @@ MESSAGE: Message = Message.load(os.path.join(TEMPLATE.base, "locale"))
 
 
 app = Flask(__name__)
-app.secret_key = Pass.random_generate(64).value
-
-
-def logged() -> bool:
-    return request.cookies.get("session_id") is not None
+app.secret_key = SESSIONS.secret_key
 
 
 def get() -> str:
@@ -46,8 +42,13 @@ def get() -> str:
 
 
 def auth() -> Optional[Any]:
-    if logged():
-        return None
+    session_id: Optional[str] = request.cookies.get("session_id")
+    if session_id is None:
+        response = redirect(url_for("proxy", path=request.path.lstrip("/")))
+        response.set_cookie("session_id", SESSIONS.search().name)
+        return response
+    elif SESSIONS.verify(session_id):
+        return None  # logged
     elif request.method == "GET":
         return get()
     elif request.method == "POST":
@@ -55,9 +56,8 @@ def auth() -> Optional[Any]:
         password = request.form["password"]
         if not password or not AUTH.verify(username, password):
             return get()
-        response = redirect(url_for("proxy", path=request.path.lstrip("/")))
-        response.set_cookie("session_id", str(uuid4()))
-        return response
+        SESSIONS.sign_in(session_id)
+        return redirect(url_for("proxy", path=request.path.lstrip("/")))
 
 
 def login_required(f):
@@ -71,7 +71,8 @@ def login_required(f):
 
 @app.route("/favicon.ico", methods=["GET"])
 def favicon() -> Response:
-    if logged() and (response := requests.get(urljoin(TARGET, "favicon.ico"), headers=request.headers)).status_code == 200:  # noqa:E501
+    logged: bool = SESSIONS.verify(request.cookies.get("session_id"))
+    if logged and (response := requests.get(urljoin(TARGET, "favicon.ico"), headers=request.headers)).status_code == 200:  # noqa:E501
         return Response(response.content, response.status_code, response.headers.items())  # noqa:E501
     return app.response_class(TEMPLATE.favicon.loadb(), mimetype="image/vnd.microsoft.icon")  # noqa:E501
 
@@ -82,12 +83,15 @@ def favicon() -> Response:
 def proxy(path: str) -> Response:
     target_url = urljoin(TARGET, path)
 
-    if request.method == "GET":
-        response = requests.get(target_url, headers=request.headers)
-    elif request.method == "POST":
-        response = requests.post(target_url, headers=request.headers, data=request.data)  # noqa:E501
-    else:
-        return Response("Method not allowed", status=405)
+    try:
+        if request.method == "GET":
+            response = requests.get(target_url, headers=request.headers)
+        elif request.method == "POST":
+            response = requests.post(target_url, headers=request.headers, data=request.data)  # noqa:E501
+        else:
+            return Response("Method not allowed", status=405)
+    except requests.RequestException:
+        return Response("Service unavailable", status=503)
 
     excluded_headers = ["content-encoding", "content-length", "transfer-encoding", "connection"]  # noqa:E501
     headers = [(name, value) for (name, value) in response.raw.headers.items() if name.lower() not in excluded_headers]  # noqa:E501
