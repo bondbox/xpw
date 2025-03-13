@@ -1,4 +1,5 @@
-xkits >= 2.2.0
+xkits >= 2.3.0
+xhtm >= 0.1.0
 argon2-cffi
 ldap3
 toml

@@ -8,3 +8,4 @@ from .password import Argon2Hasher  # noqa:F401
 from .password import Pass  # noqa:F401
 from .password import Salt  # noqa:F401
 from .password import Secret  # noqa:F401
+from .session import SessionPool  # noqa:F401
