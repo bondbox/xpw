@@ -89,9 +89,9 @@ def proxy(path: str) -> Response:
         elif request.method == "POST":
             response = requests.post(target_url, headers=request.headers, data=request.data)  # noqa:E501
         else:
-            return Response("Method not allowed", status=405)
-    except requests.RequestException:
-        return Response("Service unavailable", status=503)
+            return Response("Method Not Allowed", status=405)
+    except requests.ConnectionError:
+        return Response("Bad Gateway", status=502)
 
     excluded_headers = ["content-encoding", "content-length", "transfer-encoding", "connection"]  # noqa:E501
     headers = [(name, value) for (name, value) in response.raw.headers.items() if name.lower() not in excluded_headers]  # noqa:E501
