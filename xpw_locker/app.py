@@ -4,17 +4,16 @@ from functools import wraps
 import os
 from typing import Any
 from typing import Optional
-from urllib.parse import urljoin
 
 from flask import Flask
 from flask import Response
 from flask import redirect  # noqa:H306
 from flask import render_template_string
 from flask import request
-from flask import stream_with_context
 from flask import url_for
 import requests
 from xhtml import AcceptLanguage
+from xhtml import FlaskProxy
 from xhtml import Template
 from xlc import Message
 from xlc import Segment
@@ -23,12 +22,12 @@ from xpw import AuthInit
 from xpw import BasicAuth
 from xpw import SessionPool
 
-TARGET: str = "http://127.0.0.1:8000"
 SESSIONS: SessionPool = SessionPool()
 AUTH: BasicAuth = AuthInit.from_file()
 BASE: str = os.path.dirname(__file__)
 TEMPLATE: Template = Template(os.path.join(BASE, "resources"))
 MESSAGE: Message = Message.load(os.path.join(TEMPLATE.base, "locale"))
+PROXY: FlaskProxy = FlaskProxy("http://127.0.0.1:8000")
 
 
 app = Flask(__name__)
@@ -73,18 +72,9 @@ def login_required(f):
 @app.route("/favicon.ico", methods=["GET"])
 def favicon() -> Response:
     logged: bool = SESSIONS.verify(request.cookies.get("session_id"))
-    if logged and (response := requests.get(urljoin(TARGET, "favicon.ico"), headers=request.headers)).status_code == 200:  # noqa:E501
+    if logged and (response := requests.get(PROXY.urljoin("favicon.ico"), headers=request.headers)).status_code == 200:  # noqa:E501
         return Response(response.content, response.status_code, response.headers.items())  # noqa:E501
     return app.response_class(TEMPLATE.favicon.loadb(), mimetype="image/vnd.microsoft.icon")  # noqa:E501
-
-
-def transform(response: requests.Response) -> Response:
-    def generate(response: requests.Response):
-        for chunk in response.iter_content(chunk_size=1048576):  # 1MB
-            yield chunk
-    excluded_headers = ["content-encoding", "content-length", "transfer-encoding", "connection"]  # noqa:E501
-    headers = [(name, value) for (name, value) in response.raw.headers.items() if name.lower() not in excluded_headers]  # noqa:E501
-    return Response(stream_with_context(generate(response)), response.status_code, headers)  # noqa:E501
 
 
 @app.route("/", defaults={"path": ""}, methods=["GET", "POST"])
@@ -92,12 +82,7 @@ def transform(response: requests.Response) -> Response:
 @login_required
 def proxy(path: str) -> Response:
     try:
-        target_url = urljoin(TARGET, path)
-        if request.method == "GET":
-            return transform(requests.get(target_url, headers=request.headers, stream=True))  # noqa:E501
-        elif request.method == "POST":
-            return transform(requests.post(target_url, headers=request.headers, data=request.data, stream=True))  # noqa:E501
-        return Response("Method Not Allowed", status=405)
+        return PROXY.request(request)
     except requests.ConnectionError:
         return Response("Bad Gateway", status=502)
 
