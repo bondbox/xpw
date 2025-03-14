@@ -12,22 +12,20 @@ from flask import render_template_string
 from flask import request
 from flask import url_for
 import requests
-from xhtml import AcceptLanguage
 from xhtml import FlaskProxy
-from xhtml import Template
-from xlc import Message
-from xlc import Segment
+from xhtml import LocaleTemplate
 
 from xpw import AuthInit
 from xpw import BasicAuth
 from xpw import SessionPool
 
-SESSIONS: SessionPool = SessionPool()
-AUTH: BasicAuth = AuthInit.from_file()
+AUTH: BasicAuth
+PROXY: FlaskProxy
+TEMPLATE: LocaleTemplate
+
+
 BASE: str = os.path.dirname(__file__)
-TEMPLATE: Template = Template(os.path.join(BASE, "resources"))
-MESSAGE: Message = Message.load(os.path.join(TEMPLATE.base, "locale"))
-PROXY: FlaskProxy = FlaskProxy("http://127.0.0.1:8000")
+SESSIONS: SessionPool = SessionPool()
 
 
 app = Flask(__name__)
@@ -35,10 +33,8 @@ app.secret_key = SESSIONS.secret_key
 
 
 def get() -> str:
-    accept_language: str = request.headers.get("Accept-Language", "en")
-    segment: Segment = AcceptLanguage(accept_language).choice(MESSAGE)
-    return render_template_string(TEMPLATE.seek("login.html").loads(),
-                                  **segment.seek("login").fill())
+    context = TEMPLATE.search(request.headers.get("Accept-Language", "en"), "login").fill()  # noqa:E501
+    return render_template_string(TEMPLATE.seek("login.html").loads(), **context)  # noqa:E501
 
 
 def auth() -> Optional[Any]:
@@ -90,4 +86,7 @@ def proxy(path: str) -> Response:
 
 
 if __name__ == "__main__":
+    AUTH = AuthInit.from_file()
+    PROXY = FlaskProxy("http://127.0.0.1:8000")
+    TEMPLATE = LocaleTemplate(os.path.join(BASE, "resources"))
     app.run(host="0.0.0.0", port=3000)
