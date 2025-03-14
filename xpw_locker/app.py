@@ -71,10 +71,12 @@ def login_required(f):
 
 @app.route("/favicon.ico", methods=["GET"])
 def favicon() -> Response:
-    logged: bool = SESSIONS.verify(request.cookies.get("session_id"))
-    if logged and (response := requests.get(PROXY.urljoin("favicon.ico"), headers=request.headers)).status_code == 200:  # noqa:E501
+    if (response := requests.get(PROXY.urljoin("favicon.ico"), headers=request.headers)).status_code == 200:  # noqa:E501
         return Response(response.content, response.status_code, response.headers.items())  # noqa:E501
-    return app.response_class(TEMPLATE.favicon.loadb(), mimetype="image/vnd.microsoft.icon")  # noqa:E501
+    logged: bool = SESSIONS.verify(request.cookies.get("session_id"))
+    object: str = "unlock.ico" if logged else "locked.ico"
+    binary: bytes = TEMPLATE.seek(object).loadb()
+    return app.response_class(binary, mimetype="image/vnd.microsoft.icon")
 
 
 @app.route("/", defaults={"path": ""}, methods=["GET", "POST"])
