@@ -21,8 +21,9 @@ def favicon():
     return app.response_class(TEMPLATE.favicon.loadb(), mimetype='image/vnd.microsoft.icon')  # noqa:E501
 
 
-@app.route("/", methods=["GET"])
-def hello():
+@app.route("/", defaults={"path": ""}, methods=["GET"])
+@app.route("/<path:path>", methods=["GET"])
+def hello(path: str):
     return render_template_string(TEMPLATE.seek("hello.html").loads())
 
 
