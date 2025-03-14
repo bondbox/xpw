@@ -15,7 +15,7 @@ from xkits import run_command
 from xpw import AuthInit
 from xpw.attribute import __urlhome__
 from xpw.attribute import __version__
-from xpw_locker import app
+from xpw_locker import web
 
 
 @add_command("xpw-locker", description="User access authentication")
@@ -25,10 +25,10 @@ def add_cmd(_arg: argp):
 
 @run_command(add_cmd)
 def run_cmd(cmds: commands) -> int:
-    app.AUTH = AuthInit.from_file()
-    app.PROXY = FlaskProxy("http://127.0.0.1:8000")
-    app.TEMPLATE = LocaleTemplate(os.path.join(app.BASE, "resources"))
-    app.app.run(host="0.0.0.0", port=3000)
+    web.AUTH = AuthInit.from_file()
+    web.PROXY = FlaskProxy("http://127.0.0.1:8000")
+    web.TEMPLATE = LocaleTemplate(os.path.join(web.BASE, "resources"))
+    web.app.run(host="0.0.0.0", port=3000)
     return ECANCELED
 
 
