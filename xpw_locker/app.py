@@ -11,6 +11,7 @@ from flask import Response
 from flask import redirect  # noqa:H306
 from flask import render_template_string
 from flask import request
+from flask import stream_with_context
 from flask import url_for
 import requests
 from xhtml import AcceptLanguage
@@ -78,9 +79,12 @@ def favicon() -> Response:
 
 
 def transform(response: requests.Response) -> Response:
+    def generate(response: requests.Response):
+        for chunk in response.iter_content(chunk_size=1048576):  # 1MB
+            yield chunk
     excluded_headers = ["content-encoding", "content-length", "transfer-encoding", "connection"]  # noqa:E501
     headers = [(name, value) for (name, value) in response.raw.headers.items() if name.lower() not in excluded_headers]  # noqa:E501
-    return Response(response.content, response.status_code, headers)
+    return Response(stream_with_context(generate(response)), response.status_code, headers)  # noqa:E501
 
 
 @app.route("/", defaults={"path": ""}, methods=["GET", "POST"])
@@ -90,9 +94,9 @@ def proxy(path: str) -> Response:
     try:
         target_url = urljoin(TARGET, path)
         if request.method == "GET":
-            return transform(requests.get(target_url, headers=request.headers))
+            return transform(requests.get(target_url, headers=request.headers, stream=True))  # noqa:E501
         elif request.method == "POST":
-            return transform(requests.post(target_url, headers=request.headers, data=request.data))  # noqa:E501
+            return transform(requests.post(target_url, headers=request.headers, data=request.data, stream=True))  # noqa:E501
         return Response("Method Not Allowed", status=405)
     except requests.ConnectionError:
         return Response("Bad Gateway", status=502)
