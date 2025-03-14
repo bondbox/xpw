@@ -77,25 +77,25 @@ def favicon() -> Response:
     return app.response_class(TEMPLATE.favicon.loadb(), mimetype="image/vnd.microsoft.icon")  # noqa:E501
 
 
+def transform(response: requests.Response) -> Response:
+    excluded_headers = ["content-encoding", "content-length", "transfer-encoding", "connection"]  # noqa:E501
+    headers = [(name, value) for (name, value) in response.raw.headers.items() if name.lower() not in excluded_headers]  # noqa:E501
+    return Response(response.content, response.status_code, headers)
+
+
 @app.route("/", defaults={"path": ""}, methods=["GET", "POST"])
 @app.route("/<path:path>", methods=["GET", "POST"])
 @login_required
 def proxy(path: str) -> Response:
-    target_url = urljoin(TARGET, path)
-
     try:
+        target_url = urljoin(TARGET, path)
         if request.method == "GET":
-            response = requests.get(target_url, headers=request.headers)
+            return transform(requests.get(target_url, headers=request.headers))
         elif request.method == "POST":
-            response = requests.post(target_url, headers=request.headers, data=request.data)  # noqa:E501
-        else:
-            return Response("Method Not Allowed", status=405)
+            return transform(requests.post(target_url, headers=request.headers, data=request.data))  # noqa:E501
+        return Response("Method Not Allowed", status=405)
     except requests.ConnectionError:
         return Response("Bad Gateway", status=502)
-
-    excluded_headers = ["content-encoding", "content-length", "transfer-encoding", "connection"]  # noqa:E501
-    headers = [(name, value) for (name, value) in response.raw.headers.items() if name.lower() not in excluded_headers]  # noqa:E501
-    return Response(response.content, response.status_code, headers)
 
 
 if __name__ == "__main__":
