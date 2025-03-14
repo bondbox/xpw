@@ -1,6 +1,7 @@
 [run]
 omit =
     xpw/unittest/*
+    xpw_locker/unittest/*
 
 [report]
 exclude_lines =
