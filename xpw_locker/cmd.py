@@ -20,15 +20,24 @@ from xpw_locker import web
 
 @add_command("xpw-locker", description="User access authentication")
 def add_cmd(_arg: argp):
-    pass
+    _arg.add_argument("--config", type=str, dest="config_file",
+                      help="Authentication configuration",
+                      metavar="FILE", default=".pwauth")
+    _arg.add_argument("--target", type=str, dest="target_url",
+                      help="Proxy target url", metavar="URL",
+                      default="http://127.0.0.1:8000")
+    _arg.add_argument("--host", type=str, dest="listen_address",
+                      help="Listen address", metavar="ADDR", default="0.0.0.0")
+    _arg.add_argument("--port", type=int, dest="listen_port",
+                      help="Listen port", metavar="PORT", default=3000)
 
 
 @run_command(add_cmd)
 def run_cmd(cmds: commands) -> int:
-    web.AUTH = AuthInit.from_file()
-    web.PROXY = FlaskProxy("http://127.0.0.1:8000")
+    web.AUTH = AuthInit.from_file(cmds.args.config_file)
+    web.PROXY = FlaskProxy(cmds.args.target_url)
     web.TEMPLATE = LocaleTemplate(os.path.join(web.BASE, "resources"))
-    web.app.run(host="0.0.0.0", port=3000)
+    web.app.run(host=cmds.args.listen_address, port=cmds.args.listen_port)
     return ECANCELED
 
 
