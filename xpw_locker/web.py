@@ -14,6 +14,7 @@ from flask import url_for
 import requests
 from xhtml import FlaskProxy
 from xhtml import LocaleTemplate
+from xkits import cmds
 
 from xpw import AuthInit
 from xpw import BasicAuth
@@ -42,6 +43,7 @@ def auth() -> Optional[Any]:
         response.set_cookie("session_id", SESSIONS.search().name)
         return response
     elif SESSIONS.verify(session_id):
+        cmds.logger.info(f"{session_id} is logged.")
         return None  # logged
     elif request.method == "GET":
         return get()
@@ -49,8 +51,10 @@ def auth() -> Optional[Any]:
         username = request.form["username"]
         password = request.form["password"]
         if not password or not AUTH.verify(username, password):
+            cmds.logger.warn(f"{session_id} login error.")
             return get()
         SESSIONS.sign_in(session_id)
+        cmds.logger.info(f"{session_id} sign in.")
         return redirect(url_for("proxy", path=request.path.lstrip("/")))
 
 
