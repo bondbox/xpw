@@ -23,15 +23,15 @@ class SessionPool(ItemPool[str, Optional[str]]):
     def secret_key(self) -> str:
         return self.__secret_key
 
-    def search(self, id: Optional[str] = None) -> CacheItem[str, Optional[str]]:  # noqa:E501
-        session_id: str = id or str(uuid4())
+    def search(self, sid: Optional[str] = None) -> CacheItem[str, Optional[str]]:  # noqa:E501
+        session_id: str = sid or str(uuid4())
         if session_id not in self:
             self.put(session_id, None)
         return self.get(session_id)
 
-    def verify(self, id: Optional[str] = None) -> bool:
+    def verify(self, sid: Optional[str] = None) -> bool:
         try:
-            return isinstance(id, str) and self[id].data == self.secret_key
+            return isinstance(sid, str) and self[sid].data == self.secret_key
         except (CacheExpired, CacheMiss):
             return False
 
