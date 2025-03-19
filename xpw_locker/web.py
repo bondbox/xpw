@@ -31,31 +31,27 @@ app = Flask(__name__)
 app.secret_key = SESSIONS.secret_key
 
 
-def get() -> str:
-    context = TEMPLATE.search(request.headers.get("Accept-Language", "en"), "login").fill()  # noqa:E501
-    return render_template_string(TEMPLATE.seek("login.html").loads(), **context)  # noqa:E501
-
-
 def auth() -> Optional[Any]:
     session_id: Optional[str] = request.cookies.get("session_id")
     if session_id is None:
         response = redirect(url_for("proxy", path=request.path.lstrip("/")))
         response.set_cookie("session_id", SESSIONS.search().name)
         return response
-    elif SESSIONS.verify(session_id):
+    if SESSIONS.verify(session_id):
         # cmds.logger.info(f"{session_id} is logged.")
         return None  # logged
-    elif request.method == "GET":
-        return get()
-    elif request.method == "POST":
+    if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
-        if not password or not AUTH.verify(username, password):
-            cmds.logger.warn(f"{session_id} login error with {username}.")
-            return get()
-        SESSIONS.sign_in(session_id)
-        cmds.logger.info(f"{session_id} sign in with {username}.")
-        return redirect(url_for("proxy", path=request.path.lstrip("/")))
+        if not password:  # invalid password
+            cmds.logger.info("%s login to %s with empty password.", session_id, username)  # noqa:E501
+        elif AUTH.verify(username, password):
+            SESSIONS.sign_in(session_id)
+            cmds.logger.info("%s sign in with %s.", session_id, username)
+            return redirect(url_for("proxy", path=request.path.lstrip("/")))
+        cmds.logger.warning("%s login to %s error.", session_id, username)
+    context = TEMPLATE.search(request.headers.get("Accept-Language", "en"), "login").fill()  # noqa:E501
+    return render_template_string(TEMPLATE.seek("login.html").loads(), **context)  # noqa:E501
 
 
 def login_required(f):
