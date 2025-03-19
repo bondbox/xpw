@@ -82,5 +82,5 @@ class AuthInit():  # pylint: disable=too-few-public-methods
     @classmethod
     def from_file(cls, path: str = DEFAULT_CONFIG_FILE) -> BasicAuth:
         config: CONFIG_DATA_TYPE = BasicConfig.loadf(path)
-        basic: CONFIG_DATA_TYPE = config.get("basic", {})
-        return cls.METHODS[basic.get("auth_method", Argon2Config.TYPE)](config)
+        method: str = config.get("auth_method", Argon2Config.TYPE)
+        return cls.METHODS[method](config)
