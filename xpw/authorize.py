@@ -22,7 +22,7 @@ class BasicAuth(ABC):
 
     @abstractmethod
     def verify(self, username: str, password: Optional[str] = None) -> Optional[str]:  # noqa:E501
-        pass
+        raise NotImplementedError()
 
 
 class Argon2Auth(BasicAuth):
@@ -31,9 +31,7 @@ class Argon2Auth(BasicAuth):
 
     @property
     def config(self) -> Argon2Config:
-        config = super().config
-        if not isinstance(config, Argon2Config):
-            raise TypeError("config type error")
+        assert isinstance(config := super().config, Argon2Config)
         return config
 
     def verify(self, username: str, password: Optional[str] = None) -> Optional[str]:  # noqa:E501
@@ -52,9 +50,7 @@ class LdapAuth(BasicAuth):
 
     @property
     def config(self) -> LdapConfig:
-        config = super().config
-        if not isinstance(config, LdapConfig):
-            raise TypeError("config type error")
+        assert isinstance(config := super().config, LdapConfig)
         return config
 
     def verify(self, username: str, password: Optional[str] = None) -> Optional[str]:  # noqa:E501
@@ -75,9 +71,6 @@ class AuthInit():  # pylint: disable=too-few-public-methods
         Argon2Config.TYPE: Argon2Auth,
         LdapConfig.TYPE: LdapAuth,
     }
-
-    def __init__(self):
-        pass
 
     @classmethod
     def from_file(cls, path: str = DEFAULT_CONFIG_FILE) -> BasicAuth:

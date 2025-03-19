@@ -37,7 +37,7 @@ flake8:
 	flake8 xpw --count --select=E9,F63,F7,F82 --show-source --statistics
 	flake8 xpw --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 pytest:
-	pytest --cov=xpw --cov-report=term-missing --cov-report=xml --cov-report=html --cov-config=.coveragerc --cov-fail-under=100
+	pytest --cov=xpw --cov=xpw_locker --cov-report=term-missing --cov-report=xml --cov-report=html --cov-config=.coveragerc --cov-fail-under=100
 pytest-clean:
 	rm -rf .pytest_cache
 test: test-prepare pylint flake8 pytest
