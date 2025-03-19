@@ -28,7 +28,7 @@ BASE: str = os.path.dirname(__file__)
 SESSIONS: SessionPool = SessionPool()
 
 app = Flask(__name__)
-app.secret_key = SESSIONS.secret_key
+app.secret_key = SESSIONS.secret.key
 
 
 def auth() -> Optional[Any]:

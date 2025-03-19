@@ -10,18 +10,19 @@ from xkits import CacheTimeUnit
 from xkits import ItemPool
 
 from xpw.password import Pass
+from xpw.password import Secret
 
 
 class SessionPool(ItemPool[str, Optional[str]]):
     """Session pool"""
 
     def __init__(self, secret_key: Optional[str] = None, lifetime: CacheTimeUnit = 3600.0):  # noqa:E501
-        self.__secret_key: str = secret_key or Pass.random_generate(64).value
+        self.__secret: Secret = Secret(secret_key or Pass.random_generate(64).value)  # noqa:E501
         super().__init__(lifetime=lifetime)
 
     @property
-    def secret_key(self) -> str:
-        return self.__secret_key
+    def secret(self) -> Secret:
+        return self.__secret
 
     def search(self, sid: Optional[str] = None) -> CacheItem[str, Optional[str]]:  # noqa:E501
         session_id: str = sid or str(uuid4())
@@ -31,12 +32,12 @@ class SessionPool(ItemPool[str, Optional[str]]):
 
     def verify(self, sid: Optional[str] = None) -> bool:
         try:
-            return isinstance(sid, str) and self[sid].data == self.secret_key
+            return isinstance(sid, str) and self[sid].data == self.secret.key
         except (CacheExpired, CacheMiss):
             return False
 
     def sign_in(self, session_id: str, secret_key: Optional[str] = None) -> bool:  # noqa:E501
-        self.search(session_id).update(secret_key or self.secret_key)
+        self.search(session_id).update(secret_key or self.secret.key)
         return session_id in self
 
     def sign_out(self, session_id: str) -> bool:
