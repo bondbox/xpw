@@ -18,7 +18,7 @@ jobs:
         python -m pip list
     - name: Build and Test
       run: |
-        make build install
+        make build install test
     - name: Upload to PyPI
       run: |
         xpip-upload --token ${{ secrets.PYPI_TOKEN }} dist/*
