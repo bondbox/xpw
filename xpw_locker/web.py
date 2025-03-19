@@ -65,18 +65,17 @@ def login_required(f):
 
 @app.route("/favicon.ico", methods=["GET"])
 def favicon() -> Response:
-    if (response := requests.get(PROXY.urljoin("favicon.ico"), headers=request.headers)).status_code == 200:  # noqa:E501
+    if (response := requests.get(PROXY.urljoin("favicon.ico"), headers=request.headers, timeout=60)).status_code == 200:  # noqa:E501
         return Response(response.content, response.status_code, response.headers.items())  # noqa:E501
     logged: bool = SESSIONS.verify(request.cookies.get("session_id"))
-    object: str = "unlock.ico" if logged else "locked.ico"
-    binary: bytes = TEMPLATE.seek(object).loadb()
+    binary: bytes = TEMPLATE.seek("unlock.ico" if logged else "locked.ico").loadb()  # noqa:E501
     return app.response_class(binary, mimetype="image/vnd.microsoft.icon")
 
 
 @app.route("/", defaults={"path": ""}, methods=["GET", "POST"])
 @app.route("/<path:path>", methods=["GET", "POST"])
 @login_required
-def proxy(path: str) -> Response:
+def proxy(_: str) -> Response:
     try:
         return PROXY.request(request)
     except requests.ConnectionError:
