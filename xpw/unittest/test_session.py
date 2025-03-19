@@ -9,24 +9,26 @@ class TestSessionPool(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.spool = session.SessionPool()
+        pass
 
     @classmethod
     def tearDownClass(cls):
         pass
 
     def setUp(self):
-        pass
+        self.spool = session.SessionPool()
 
     def tearDown(self):
         pass
 
-    def test_sign(self):
-        self.assertTrue(self.spool.sign_in("test"))
-        self.assertTrue(self.spool.sign_out("test"))
+    def test_sign_out(self):
+        self.assertEqual(self.spool.sign_in("test"), self.spool.secret.key)
+        self.assertIsNone(self.spool.sign_out("test"))
 
     def test_verify(self):
-        self.assertFalse(self.spool.verify("unit"))
+        self.assertEqual(self.spool.sign_in("test"), self.spool.secret.key)
+        self.assertFalse(self.spool.verify("unit", self.spool.secret.key))
+        self.assertTrue(self.spool.verify("test", self.spool.secret.key))
 
 
 if __name__ == "__main__":

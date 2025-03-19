@@ -24,22 +24,22 @@ class SessionPool(ItemPool[str, Optional[str]]):
     def secret(self) -> Secret:
         return self.__secret
 
-    def search(self, sid: Optional[str] = None) -> CacheItem[str, Optional[str]]:  # noqa:E501
-        session_id: str = sid or str(uuid4())
+    def search(self, s: Optional[str] = None) -> CacheItem[str, Optional[str]]:  # noqa:E501
+        session_id: str = s or str(uuid4())
         if session_id not in self:
             self.put(session_id, None)
         return self.get(session_id)
 
-    def verify(self, sid: Optional[str] = None) -> bool:
+    def verify(self, session_id: str, secret_key: Optional[str] = None) -> bool:  # noqa:E501
         try:
-            return isinstance(sid, str) and self[sid].data == self.secret.key
+            token: str = secret_key or self.secret.key
+            return isinstance(session_id, str) and self[session_id].data == token  # noqa:E501
         except (CacheExpired, CacheMiss):
             return False
 
-    def sign_in(self, session_id: str, secret_key: Optional[str] = None) -> bool:  # noqa:E501
-        self.search(session_id).update(secret_key or self.secret.key)
-        return session_id in self
+    def sign_in(self, session_id: str, secret_key: Optional[str] = None) -> str:  # noqa:E501
+        self.search(session_id).update(token := secret_key or self.secret.key)
+        return token
 
-    def sign_out(self, session_id: str) -> bool:
+    def sign_out(self, session_id: str) -> None:
         self.delete(session_id)
-        return session_id not in self
