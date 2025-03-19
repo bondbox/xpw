@@ -75,7 +75,7 @@ def favicon() -> Response:
 @app.route("/", defaults={"path": ""}, methods=["GET", "POST"])
 @app.route("/<path:path>", methods=["GET", "POST"])
 @login_required
-def proxy(_: str) -> Response:
+def proxy(path: str) -> Response:  # pylint: disable=unused-argument
     try:
         return PROXY.request(request)
     except requests.ConnectionError:
