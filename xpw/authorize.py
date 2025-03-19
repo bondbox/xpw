@@ -4,12 +4,12 @@ from abc import ABC
 from abc import abstractmethod
 from typing import Optional
 
-from .configure import Argon2Config
-from .configure import BasicConfig
-from .configure import CONFIG_DATA_TYPE
-from .configure import DEFAULT_CONFIG_FILE
-from .configure import LdapConfig
-from .password import Argon2Hasher
+from xpw.configure import Argon2Config
+from xpw.configure import BasicConfig
+from xpw.configure import CONFIG_DATA_TYPE
+from xpw.configure import DEFAULT_CONFIG_FILE
+from xpw.configure import LdapConfig
+from xpw.password import Argon2Hasher
 
 
 class BasicAuth(ABC):

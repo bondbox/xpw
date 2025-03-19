@@ -6,9 +6,9 @@ from typing import List
 
 from toml import load
 
-from .ldapauth import LdapClient
-from .ldapauth import LdapInit
-from .password import Argon2Hasher
+from xpw.ldapauth import LdapClient
+from xpw.ldapauth import LdapInit
+from xpw.password import Argon2Hasher
 
 CONFIG_DATA_TYPE = Dict[str, Any]
 DEFAULT_CONFIG_FILE = ".pwauth"

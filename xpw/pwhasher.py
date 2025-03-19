@@ -9,10 +9,10 @@ from xkits import argp
 from xkits import commands
 from xkits import run_command
 
-from .attribute import __urlhome__
-from .attribute import __version__
-from .password import Argon2Hasher
-from .password import Pass
+from xpw.attribute import __urlhome__
+from xpw.attribute import __version__
+from xpw.password import Argon2Hasher
+from xpw.password import Pass
 
 DEFAULT_FILE = ".pwhashed"
 
