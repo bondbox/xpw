@@ -33,7 +33,7 @@ class SessionPool(ItemPool[str, Optional[str]]):
     def verify(self, session_id: str, secret_key: Optional[str] = None) -> bool:  # noqa:E501
         try:
             token: str = secret_key or self.secret.key
-            return isinstance(session_id, str) and self[session_id].data == token  # noqa:E501
+            return self[session_id].data == token
         except (CacheExpired, CacheMiss):
             return False
 
