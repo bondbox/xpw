@@ -23,11 +23,9 @@ jobs:
             ghcr.io/bondbox/xpw-locker
             mingzhebaosheng/xpw-locker
           tags: |
-            type=ref,event=branch,pattern=master
             type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=sha            
+            type=raw,value=latest
+            type=sha
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
