@@ -19,7 +19,7 @@ from xpw.attribute import __version__
 from xpw_locker import web
 
 
-@add_command("xpw-locker", description="User access authentication")
+@add_command("xpw-locker", description="Access authentication")
 def add_cmd(_arg: argp):
     _arg.add_argument("--config", type=str, dest="config_file",
                       help="Authentication configuration",

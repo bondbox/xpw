@@ -1,3 +1,1 @@
-# xpw
-
-Securely manage user passwords and authentication.
+docs/zh-Hans/README.md
