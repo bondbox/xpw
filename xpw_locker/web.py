@@ -65,9 +65,10 @@ def login_required(f):
 
 @app.route("/favicon.ico", methods=["GET"])
 def favicon() -> Response:
-    if (response := requests.get(PROXY.urljoin("favicon.ico"), headers=request.headers, timeout=60)).status_code == 200:  # noqa:E501
-        return Response(response.content, response.status_code, response.headers.items())  # noqa:E501
-    logged: bool = SESSIONS.verify(request.cookies.get("session_id"))
+    if (response := PROXY.request(request)).status_code == 200:
+        return response
+    session_id: Optional[str] = request.cookies.get("session_id")
+    logged: bool = isinstance(session_id, str) and SESSIONS.verify(session_id)
     binary: bytes = TEMPLATE.seek("unlock.ico" if logged else "locked.ico").loadb()  # noqa:E501
     return app.response_class(binary, mimetype="image/vnd.microsoft.icon")
 
@@ -77,6 +78,7 @@ def favicon() -> Response:
 @login_required
 def proxy(path: str) -> Response:  # pylint: disable=unused-argument
     try:
+        cmds.logger.debug("request.headers:\n%s", request.headers)
         return PROXY.request(request)
     except requests.ConnectionError:
         return Response("Bad Gateway", status=502)
