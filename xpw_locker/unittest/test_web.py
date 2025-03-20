@@ -2,6 +2,7 @@
 
 import os
 import unittest
+from unittest.mock import MagicMock
 from unittest.mock import patch
 
 from xpw.authorize import Argon2Auth
@@ -28,22 +29,21 @@ class TestFavicon(unittest.TestCase):
     def tearDown(self):
         pass
 
-    @patch.object(web, "requests")
-    def test_favicon_origin(self, mock_requests):
-        mock_requests.get.return_value.status_code = 200
-        mock_requests.get.return_value.content = b"favicon_content"
-        with web.app.test_request_context("/favicon.ico"):
-            response = web.favicon()
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.data, b"favicon_content")
+    def test_favicon_origin(self):
+        with patch.object(web.PROXY, "request") as mock_request:
+            fake_request = MagicMock()
+            fake_request.status_code = 200
+            mock_request.side_effect = [fake_request]
+            with web.app.test_request_context("/favicon.ico"):
+                self.assertIs(web.favicon(), fake_request)
 
-    @patch.object(web, "requests")
-    def test_favicon_locked(self, mock_requests):
-        mock_requests.get.return_value.status_code = 500
-        with web.app.test_request_context("/favicon.ico"):
-            response = web.favicon()
-            self.assertEqual(response.status_code, 200)
-            self.assertIsInstance(response.data, bytes)
+    def test_favicon_locked(self):
+        with patch.object(web, "requests") as mock_requests:
+            mock_requests.get.return_value.status_code = 500
+            with web.app.test_request_context("/favicon.ico"):
+                response = web.favicon()
+                self.assertEqual(response.status_code, 200)
+                self.assertIsInstance(response.data, bytes)
 
 
 class TestProxy(unittest.TestCase):
