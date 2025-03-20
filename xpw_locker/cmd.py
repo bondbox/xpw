@@ -22,15 +22,17 @@ from xpw_locker import web
 @add_command("xpw-locker", description="Access authentication")
 def add_cmd(_arg: argp):
     _arg.add_argument("--config", type=str, dest="config_file",
-                      help="Authentication configuration",
-                      metavar="FILE", default=DEFAULT_CONFIG_FILE)
+                      help="Authentication configuration", metavar="FILE",
+                      default=os.getenv("CONFIG_FILE", DEFAULT_CONFIG_FILE))
     _arg.add_argument("--target", type=str, dest="target_url",
                       help="Proxy target url", metavar="URL",
-                      default="http://127.0.0.1:8000")
+                      default=os.getenv("TARGET_URL", "http://127.0.0.1:8000"))
     _arg.add_argument("--host", type=str, dest="listen_address",
-                      help="Listen address", metavar="ADDR", default="0.0.0.0")
+                      help="Listen address", metavar="ADDR",
+                      default=os.getenv("LISTEN_ADDRESS", "0.0.0.0"))
     _arg.add_argument("--port", type=int, dest="listen_port",
-                      help="Listen port", metavar="PORT", default=3000)
+                      help="Listen port", metavar="PORT",
+                      default=int(os.getenv("LISTEN_PORT", "3000")))
 
 
 @run_command(add_cmd)
