@@ -14,7 +14,7 @@ from xpw.attribute import __version__
 from xpw.password import Argon2Hasher
 from xpw.password import Pass
 
-DEFAULT_FILE = ".pwhashed"
+DEFAULT_FILE = "xpwhashed"
 
 
 def get_password(password: Optional[str], dialog_confirm: bool) -> Pass:

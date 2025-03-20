@@ -13,6 +13,7 @@ from xkits import commands
 from xkits import run_command
 
 from xpw import AuthInit
+from xpw import DEFAULT_CONFIG_FILE
 from xpw.attribute import __urlhome__
 from xpw.attribute import __version__
 from xpw_locker import web
@@ -22,7 +23,7 @@ from xpw_locker import web
 def add_cmd(_arg: argp):
     _arg.add_argument("--config", type=str, dest="config_file",
                       help="Authentication configuration",
-                      metavar="FILE", default=".pwauth")
+                      metavar="FILE", default=DEFAULT_CONFIG_FILE)
     _arg.add_argument("--target", type=str, dest="target_url",
                       help="Proxy target url", metavar="URL",
                       default="http://127.0.0.1:8000")

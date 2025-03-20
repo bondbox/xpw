@@ -11,7 +11,7 @@ from xpw.ldapauth import LdapInit
 from xpw.password import Argon2Hasher
 
 CONFIG_DATA_TYPE = Dict[str, Any]
-DEFAULT_CONFIG_FILE = ".pwauth"
+DEFAULT_CONFIG_FILE = "xpwauth"
 
 
 class BasicConfig():
