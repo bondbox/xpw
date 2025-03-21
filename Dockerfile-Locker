@@ -10,6 +10,7 @@ FROM python:3.9-slim as runner
 
 WORKDIR /app
 
+COPY ./xpwauth .
 COPY --from=builder /app/dist/*.whl .
 
 RUN pip install --no-cache-dir *.whl
