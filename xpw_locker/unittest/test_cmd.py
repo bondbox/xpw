@@ -25,7 +25,7 @@ class TestCmd(unittest.TestCase):
     def tearDown(self):
         pass
 
-    @mock.patch.object(cmd.web.app, "run")
+    @mock.patch.object(cmd.web.APP, "run")
     @mock.patch.object(cmd.AuthInit, "from_file")
     def test_main(self, mock_auth, _):
         mock_auth.side_effect = [Argon2Auth({"users": {"test", "unit"}})]

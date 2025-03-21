@@ -41,12 +41,13 @@ def add_cmd(_arg: argp):
 
 @run_command(add_cmd)
 def run_cmd(cmds: commands) -> int:
+    web.PORT = cmds.args.listen_port
+    web.HOST = cmds.args.listen_address
     web.AUTH = AuthInit.from_file(cmds.args.config_file)
     web.PROXY = FlaskProxy(cmds.args.target_url)
     web.SESSIONS = SessionPool(lifetime=cmds.args.lifetime * 3600)
     web.TEMPLATE = LocaleTemplate(os.path.join(web.BASE, "resources"))
-    web.app.secret_key = web.SESSIONS.secret.key
-    web.app.run(host=cmds.args.listen_address, port=cmds.args.listen_port)
+    web.run()
     return ECANCELED
 
 

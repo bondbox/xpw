@@ -26,17 +26,30 @@ SESSIONS: SessionPool
 TEMPLATE: LocaleTemplate
 
 BASE: str = os.path.dirname(__file__)
-app = Flask(__name__)
+APP: Flask = Flask(__name__)
+HOST: str = "0.0.0.0"
+PORT: int = 3000
+
+
+def run():
+    APP.secret_key = SESSIONS.secret.key
+    APP.run(host=HOST, port=PORT)
 
 
 def auth() -> Optional[Any]:
+    cmds.logger.debug("request.headers:\n%s", request.headers)
+    host: Optional[str] = request.headers.get("Host")
+    if host == f"localhost:{PORT}":
+        cmds.logger.debug("Skip python-requests.")
+        return None
     session_id: Optional[str] = request.cookies.get("session_id")
     if session_id is None:
         response = redirect(url_for("proxy", path=request.path.lstrip("/")))
         response.set_cookie("session_id", SESSIONS.search().name)
         return response
+    cmds.logger.debug("%s request verify.", session_id)
     if SESSIONS.verify(session_id):
-        # cmds.logger.info(f"{session_id} is logged.")
+        # cmds.logger.info("%s is logged.", session_id)
         return None  # logged
     if request.method == "POST":
         username = request.form["username"]
@@ -48,6 +61,7 @@ def auth() -> Optional[Any]:
             cmds.logger.info("%s sign in with %s.", session_id, username)
             return redirect(url_for("proxy", path=request.path.lstrip("/")))
         cmds.logger.warning("%s login to %s error.", session_id, username)
+    cmds.logger.debug("%s need to login.", session_id)
     context = TEMPLATE.search(request.headers.get("Accept-Language", "en"), "login").fill()  # noqa:E501
     return render_template_string(TEMPLATE.seek("login.html").loads(), **context)  # noqa:E501
 
@@ -61,23 +75,24 @@ def login_required(f):
     return decorated_function
 
 
-@app.route("/favicon.ico", methods=["GET"])
+@APP.route("/favicon.ico", methods=["GET"])
 def favicon() -> Response:
     if (response := PROXY.request(request)).status_code == 200:
         return response
     session_id: Optional[str] = request.cookies.get("session_id")
     logged: bool = isinstance(session_id, str) and SESSIONS.verify(session_id)
     binary: bytes = TEMPLATE.seek("unlock.ico" if logged else "locked.ico").loadb()  # noqa:E501
-    return app.response_class(binary, mimetype="image/vnd.microsoft.icon")
+    return APP.response_class(binary, mimetype="image/vnd.microsoft.icon")
 
 
-@app.route("/", defaults={"path": ""}, methods=["GET", "POST"])
-@app.route("/<path:path>", methods=["GET", "POST"])
+@APP.route("/", defaults={"path": ""}, methods=["GET", "POST"])
+@APP.route("/<path:path>", methods=["GET", "POST"])
 @login_required
 def proxy(path: str) -> Response:  # pylint: disable=unused-argument
     try:
-        cmds.logger.debug("request.headers:\n%s", request.headers)
-        return PROXY.request(request)
+        response: Response = PROXY.request(request)
+        cmds.logger.debug("response.headers:\n%s", response.headers)
+        return response
     except requests.ConnectionError:
         return Response("Bad Gateway", status=502)
 
@@ -87,5 +102,4 @@ if __name__ == "__main__":
     PROXY = FlaskProxy("http://127.0.0.1:8000")
     TEMPLATE = LocaleTemplate(os.path.join(BASE, "resources"))
     SESSIONS = SessionPool(lifetime=86400)  # 1 day
-    app.secret_key = SESSIONS.secret.key
-    app.run(host="0.0.0.0", port=3000)
+    run()
