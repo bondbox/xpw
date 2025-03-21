@@ -22,13 +22,11 @@ from xpw import SessionPool
 
 AUTH: BasicAuth
 PROXY: FlaskProxy
+SESSIONS: SessionPool
 TEMPLATE: LocaleTemplate
 
 BASE: str = os.path.dirname(__file__)
-SESSIONS: SessionPool = SessionPool()
-
 app = Flask(__name__)
-app.secret_key = SESSIONS.secret.key
 
 
 def auth() -> Optional[Any]:
@@ -88,4 +86,6 @@ if __name__ == "__main__":
     AUTH = AuthInit.from_file()
     PROXY = FlaskProxy("http://127.0.0.1:8000")
     TEMPLATE = LocaleTemplate(os.path.join(BASE, "resources"))
+    SESSIONS = SessionPool(lifetime=86400)  # 1 day
+    app.secret_key = SESSIONS.secret.key
     app.run(host="0.0.0.0", port=3000)
