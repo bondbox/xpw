@@ -3,7 +3,7 @@
 from urllib.parse import urljoin
 
 __project__ = "xpw"
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 __description__ = "Password management and authentication."
 __urlhome__ = "https://github.com/bondbox/xpw/"
 __urlcode__ = __urlhome__
