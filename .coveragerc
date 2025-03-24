@@ -1,7 +1,9 @@
 [run]
 omit =
     xpw/unittest/*
+    xpw/attribute.py
     xpw_locker/unittest/*
+    xpw_locker/attribute.py
 
 [report]
 exclude_lines =
