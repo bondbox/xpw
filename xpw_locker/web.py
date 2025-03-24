@@ -17,11 +17,11 @@ from xkits import cmds
 
 from xpw import AuthInit
 from xpw import BasicAuth
-from xpw import SessionPool
+from xpw import SessionKeys
 
 AUTH: BasicAuth
 PROXY: FlaskProxy
-SESSIONS: SessionPool
+SESSIONS: SessionKeys
 TEMPLATE: LocaleTemplate
 
 BASE: str = os.path.dirname(__file__)
@@ -91,5 +91,5 @@ if __name__ == "__main__":
     AUTH = AuthInit.from_file()
     PROXY = FlaskProxy("http://127.0.0.1:8000")
     TEMPLATE = LocaleTemplate(os.path.join(BASE, "resources"))
-    SESSIONS = SessionPool(lifetime=86400)  # 1 day
+    SESSIONS = SessionKeys(lifetime=86400)  # 1 day
     run()

@@ -5,7 +5,7 @@ import unittest
 from xpw import session
 
 
-class TestSessionPool(unittest.TestCase):
+class TestSessionKeys(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -16,19 +16,19 @@ class TestSessionPool(unittest.TestCase):
         pass
 
     def setUp(self):
-        self.spool = session.SessionPool()
+        self.skeys = session.SessionKeys()
 
     def tearDown(self):
         pass
 
     def test_sign_out(self):
-        self.assertEqual(self.spool.sign_in("test"), self.spool.secret.key)
-        self.assertIsNone(self.spool.sign_out("test"))
+        self.assertEqual(self.skeys.sign_in("test"), self.skeys.secret.key)
+        self.assertIsNone(self.skeys.sign_out("test"))
 
     def test_verify(self):
-        self.assertEqual(self.spool.sign_in("test"), self.spool.secret.key)
-        self.assertFalse(self.spool.verify("unit", self.spool.secret.key))
-        self.assertTrue(self.spool.verify("test", self.spool.secret.key))
+        self.assertEqual(self.skeys.sign_in("test"), self.skeys.secret.key)
+        self.assertFalse(self.skeys.verify("unit", self.skeys.secret.key))
+        self.assertTrue(self.skeys.verify("test", self.skeys.secret.key))
 
 
 if __name__ == "__main__":

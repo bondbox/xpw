@@ -11,7 +11,7 @@ from xpw_locker import web
 web.AUTH = Argon2Auth({"users": {"test": "unit"}})
 web.PROXY = web.FlaskProxy("https://example.com/")
 web.TEMPLATE = web.LocaleTemplate(os.path.join(web.BASE, "resources"))
-web.SESSIONS = web.SessionPool(lifetime=86400)
+web.SESSIONS = web.SessionKeys(lifetime=86400)
 web.APP.secret_key = web.SESSIONS.secret.key
 
 

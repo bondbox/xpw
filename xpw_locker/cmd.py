@@ -14,7 +14,7 @@ from xkits import run_command
 
 from xpw import AuthInit
 from xpw import DEFAULT_CONFIG_FILE
-from xpw import SessionPool
+from xpw import SessionKeys
 from xpw.attribute import __urlhome__
 from xpw.attribute import __version__
 from xpw_locker import web
@@ -45,7 +45,7 @@ def run_cmd(cmds: commands) -> int:
     web.HOST = cmds.args.listen_address
     web.AUTH = AuthInit.from_file(cmds.args.config_file)
     web.PROXY = FlaskProxy(cmds.args.target_url)
-    web.SESSIONS = SessionPool(lifetime=cmds.args.lifetime * 3600)
+    web.SESSIONS = SessionKeys(lifetime=cmds.args.lifetime * 3600)
     web.TEMPLATE = LocaleTemplate(os.path.join(web.BASE, "resources"))
     web.run()
     return ECANCELED

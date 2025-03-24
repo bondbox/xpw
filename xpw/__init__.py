@@ -10,4 +10,4 @@ from xpw.password import Argon2Hasher  # noqa:F401
 from xpw.password import Pass  # noqa:F401
 from xpw.password import Salt  # noqa:F401
 from xpw.password import Secret  # noqa:F401
-from xpw.session import SessionPool  # noqa:F401
+from xpw.session import SessionKeys  # noqa:F401

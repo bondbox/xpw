@@ -13,8 +13,8 @@ from xpw.password import Pass
 from xpw.password import Secret
 
 
-class SessionPool(ItemPool[str, Optional[str]]):
-    """Session pool"""
+class SessionKeys(ItemPool[str, Optional[str]]):
+    """Session Secret Pool"""
 
     def __init__(self, secret_key: Optional[str] = None, lifetime: CacheTimeUnit = 3600.0):  # noqa:E501
         self.__secret: Secret = Secret(secret_key or Pass.random_generate(64).value)  # noqa:E501
