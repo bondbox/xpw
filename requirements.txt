@@ -1,4 +1,4 @@
-xkits >= 2.3.0
+xkits >= 2.4.2
 xhtm >= 0.3.1
 argon2-cffi
 ldap3
