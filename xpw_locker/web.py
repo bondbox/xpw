@@ -1,6 +1,5 @@
 # coding:utf-8
 
-from functools import wraps
 import os
 from typing import Any
 from typing import Optional
@@ -36,7 +35,8 @@ def run():
     APP.run(host=HOST, port=PORT)
 
 
-def auth() -> Optional[Any]:
+@APP.before_request
+def authenticate() -> Optional[Any]:
     cmds.logger.debug("request.headers:\n%s", request.headers)
     host: Optional[str] = request.headers.get("Host")
     if host == f"localhost:{PORT}":
@@ -66,15 +66,6 @@ def auth() -> Optional[Any]:
     return render_template_string(TEMPLATE.seek("login.html").loads(), **context)  # noqa:E501
 
 
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if (response := auth()) is not None:
-            return response
-        return f(*args, **kwargs)
-    return decorated_function
-
-
 @APP.route("/favicon.ico", methods=["GET"])
 def favicon() -> Response:
     if (response := PROXY.request(request)).status_code == 200:
@@ -87,7 +78,6 @@ def favicon() -> Response:
 
 @APP.route("/", defaults={"path": ""}, methods=["GET", "POST"])
 @APP.route("/<path:path>", methods=["GET", "POST"])
-@login_required
 def proxy(path: str) -> Response:  # pylint: disable=unused-argument
     try:
         response: Response = PROXY.request(request)
