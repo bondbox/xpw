@@ -2,8 +2,7 @@
 
 import unittest
 from unittest import mock
-
-from mock import MagicMock
+from unittest.mock import MagicMock
 
 from xpw import authorize
 
