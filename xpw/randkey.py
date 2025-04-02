@@ -4,10 +4,10 @@ import string
 from typing import Optional
 from typing import Sequence
 
-from xkits import add_command
-from xkits import argp
-from xkits import commands
-from xkits import run_command
+from xkits_command import ArgParser
+from xkits_command import Command
+from xkits_command import CommandArgument
+from xkits_command import CommandExecutor
 
 from xpw.attribute import __urlhome__
 from xpw.attribute import __version__
@@ -16,8 +16,8 @@ from xpw.password import Pass
 DEFAULT_CHARACTERS = string.digits + string.ascii_lowercase
 
 
-@add_command("randkey", description="generate a random secret key")
-def add_cmd(_arg: argp):
+@CommandArgument("randkey", description="generate a random secret key")
+def add_cmd(_arg: ArgParser):
     _arg.add_argument("--characters", dest="characters", type=str,
                       metavar="CHAR", default=DEFAULT_CHARACTERS,
                       help="secret key contains specify characters")
@@ -36,8 +36,8 @@ def add_cmd(_arg: argp):
                       help="the length of secret key, default is random")
 
 
-@run_command(add_cmd)
-def run_cmd(cmds: commands) -> int:
+@CommandExecutor(add_cmd)
+def run_cmd(cmds: Command) -> int:
     chr: str = cmds.args.characters  # pylint: disable=redefined-builtin
     if cmds.args.enable_digit:
         chr += string.digits
@@ -56,6 +56,6 @@ def run_cmd(cmds: commands) -> int:
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
-    cmds = commands()
+    cmds = Command()
     cmds.version = __version__
     return cmds.run(root=add_cmd, argv=argv, epilog=f"For more, please visit {__urlhome__}.")  # noqa:E501

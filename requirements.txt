@@ -1,6 +1,5 @@
-xkits >= 2.4.2
-xhtm >= 0.3.1
-flask_cors
+xkits_command>=0.2
+xkits_lib>=0.2.1
 argon2-cffi
 ldap3
 toml

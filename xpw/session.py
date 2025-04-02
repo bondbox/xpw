@@ -3,11 +3,11 @@
 from typing import Optional
 from uuid import uuid4
 
-from xkits import CacheExpired
-from xkits import CacheItem
-from xkits import CacheMiss
-from xkits import CacheTimeUnit
-from xkits import ItemPool
+from xkits_lib.cache import CacheExpired
+from xkits_lib.cache import CacheItem
+from xkits_lib.cache import CacheMiss
+from xkits_lib.cache import ItemPool
+from xkits_lib.unit import TimeUnit
 
 from xpw.password import Pass
 from xpw.password import Secret
@@ -16,7 +16,7 @@ from xpw.password import Secret
 class SessionKeys(ItemPool[str, Optional[str]]):
     """Session Secret Pool"""
 
-    def __init__(self, secret_key: Optional[str] = None, lifetime: CacheTimeUnit = 3600.0):  # noqa:E501
+    def __init__(self, secret_key: Optional[str] = None, lifetime: TimeUnit = 3600.0):  # noqa:E501
         self.__secret: Secret = Secret(secret_key or Pass.random_generate(64).value)  # noqa:E501
         super().__init__(lifetime=lifetime)
 
