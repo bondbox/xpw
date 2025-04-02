@@ -1,14 +1,9 @@
 # coding:utf-8
 
-from urllib.parse import urljoin
-
 __project__ = "xpw"
 __version__ = "0.4.0"
-__description__ = "Password management and authentication."
 __urlhome__ = "https://github.com/bondbox/xpw/"
-__urlcode__ = __urlhome__
-__urldocs__ = __urlhome__
-__urlbugs__ = urljoin(__urlhome__, "issues")
+__description__ = "Password management and authentication"
 
 # author
 __author__ = "Mingzhe Zou"

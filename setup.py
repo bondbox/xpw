@@ -1,5 +1,7 @@
 # coding=utf-8
 
+from urllib.parse import urljoin
+
 from setuptools import find_packages
 from setuptools import setup
 
@@ -7,11 +9,12 @@ from xpw.attribute import __author__
 from xpw.attribute import __author_email__
 from xpw.attribute import __description__
 from xpw.attribute import __project__
-from xpw.attribute import __urlbugs__
-from xpw.attribute import __urlcode__
-from xpw.attribute import __urldocs__
 from xpw.attribute import __urlhome__
 from xpw.attribute import __version__
+
+__urlcode__ = __urlhome__
+__urldocs__ = __urlhome__
+__urlbugs__ = urljoin(__urlhome__, "issues")
 
 
 def all_requirements():
@@ -33,8 +36,5 @@ setup(
     project_urls={"Source Code": __urlcode__,
                   "Bug Tracker": __urlbugs__,
                   "Documentation": __urldocs__},
-    packages=find_packages(include=["xpw*"], exclude=["unittest"]),
-    package_data={"xpw_locker.resources": ["*.html", "*.ico"],
-                  "xpw_locker.resources.images": ["*.svg"],
-                  "xpw_locker.resources.locale": ["*.xlc"]},
+    packages=find_packages(include=["xpw*"], exclude=["xpw.unittest"]),
     install_requires=all_requirements())
