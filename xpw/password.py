@@ -2,19 +2,11 @@
 
 from enum import IntEnum
 from enum import auto  # noqa:H306
-from getpass import getpass
-from os import urandom
-import random
-import secrets
 import string
 import sys
 from typing import Iterable
 from typing import Optional
 from typing import Union
-
-from argon2 import PasswordHasher
-from argon2 import Type
-from argon2.exceptions import VerifyMismatchError
 
 
 class Secret():
@@ -134,17 +126,22 @@ class Pass():
         return characters
 
     @classmethod
-    def random_generate(cls, length: Optional[int] = None, chars: Characters = CharacterSet.DEFAULT) -> "Pass":  # noqa:E501
+    def random_generate(cls, length: Optional[int] = None, characters: Characters = CharacterSet.DEFAULT) -> "Pass":  # noqa:E501
         "generate a random secret key"
-        characters: str = cls.get_character_set(chars)
-        number: int = max(cls.MIN_LENGTH, length or random.randint(32, 64))
-        password: str = cls.join(secrets.choice(characters) for _ in range(number))  # noqa:E501
+        from random import randint
+
+        number: int = max(cls.MIN_LENGTH, length or randint(32, 64))
+        chars: str = cls.get_character_set(characters)
+        width: int = len(chars)
+        password: str = cls.join(chars[randint(1, width) - 1] for _ in range(number))  # noqa:E501
         return cls(password)
 
     @classmethod
     def dialog(cls, max_retry: int = 3, need_confirm: bool = True) -> "Pass":
         for sn in range(1, min(max(1, max_retry), 10) + 1):
             try:
+                from getpass import getpass
+
                 password: Pass = cls(getpass("password: "))
                 if need_confirm:  # confirm password is match
                     password.match(getpass("confirm: "), throw=True)
@@ -177,6 +174,8 @@ class Salt():
     @classmethod
     def random(cls, length: int = DEF_LENGTH) -> "Salt":
         """generate random password salt"""
+        from os import urandom
+
         return cls(urandom(length))
 
     @classmethod
@@ -211,6 +210,9 @@ class Argon2Hasher():
 
     def verify(self, password: str) -> bool:
         """verify password is match"""
+        from argon2 import PasswordHasher
+        from argon2.exceptions import VerifyMismatchError
+
         try:
             return PasswordHasher().verify(self.hashed, password)
         except VerifyMismatchError:
@@ -225,6 +227,9 @@ class Argon2Hasher():
              hash_len: int = DEFAULT_HASH_LENGTH,
              salt_len: int = DEFAULT_SALT_LENGTH
              ) -> "Argon2Hasher":
+        from argon2 import PasswordHasher
+        from argon2 import Type
+
         return cls(hashed=PasswordHasher(
             time_cost=time_cost,
             memory_cost=memory_cost,

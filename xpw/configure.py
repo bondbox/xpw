@@ -4,8 +4,6 @@ from typing import Any
 from typing import Dict
 from typing import List
 
-from toml import load
-
 from xpw.ldapauth import LdapClient
 from xpw.ldapauth import LdapInit
 from xpw.password import Argon2Hasher
@@ -25,6 +23,8 @@ class BasicConfig():
     @classmethod
     def loadf(cls, path: str = DEFAULT_CONFIG_FILE) -> CONFIG_DATA_TYPE:
         """load config from toml file"""
+        from toml import load
+
         return load(path)
 
 
