@@ -128,7 +128,7 @@ class Pass():
     @classmethod
     def random_generate(cls, length: Optional[int] = None, characters: Characters = CharacterSet.DEFAULT) -> "Pass":  # noqa:E501
         "generate a random secret key"
-        from random import randint
+        from random import randint  # pylint: disable=import-outside-toplevel
 
         number: int = max(cls.MIN_LENGTH, length or randint(32, 64))
         chars: str = cls.get_character_set(characters)
@@ -140,7 +140,7 @@ class Pass():
     def dialog(cls, max_retry: int = 3, need_confirm: bool = True) -> "Pass":
         for sn in range(1, min(max(1, max_retry), 10) + 1):
             try:
-                from getpass import getpass
+                from getpass import getpass  # pylint: disable=C0415
 
                 password: Pass = cls(getpass("password: "))
                 if need_confirm:  # confirm password is match
@@ -174,7 +174,7 @@ class Salt():
     @classmethod
     def random(cls, length: int = DEF_LENGTH) -> "Salt":
         """generate random password salt"""
-        from os import urandom
+        from os import urandom  # pylint: disable=import-outside-toplevel
 
         return cls(urandom(length))
 
@@ -210,8 +210,8 @@ class Argon2Hasher():
 
     def verify(self, password: str) -> bool:
         """verify password is match"""
-        from argon2 import PasswordHasher
-        from argon2.exceptions import VerifyMismatchError
+        from argon2 import PasswordHasher  # pylint: disable=C0415
+        from argon2.exceptions import VerifyMismatchError  # noqa:501 pylint: disable=C0415
 
         try:
             return PasswordHasher().verify(self.hashed, password)
@@ -227,8 +227,8 @@ class Argon2Hasher():
              hash_len: int = DEFAULT_HASH_LENGTH,
              salt_len: int = DEFAULT_SALT_LENGTH
              ) -> "Argon2Hasher":
-        from argon2 import PasswordHasher
-        from argon2 import Type
+        from argon2 import PasswordHasher  # pylint: disable=C0415
+        from argon2 import Type  # pylint: disable=import-outside-toplevel
 
         return cls(hashed=PasswordHasher(
             time_cost=time_cost,

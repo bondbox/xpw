@@ -23,7 +23,7 @@ class BasicConfig():
     @classmethod
     def loadf(cls, path: str = DEFAULT_CONFIG_FILE) -> CONFIG_DATA_TYPE:
         """load config from toml file"""
-        from toml import load
+        from toml import load  # pylint: disable=import-outside-toplevel
 
         return load(path)
 

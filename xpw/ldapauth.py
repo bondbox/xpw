@@ -7,7 +7,7 @@ from typing import Set
 
 class LdapClient:
     def __init__(self, server, username: str, password: str):
-        from ldap3 import Server
+        from ldap3 import Server  # pylint: disable=import-outside-toplevel
 
         assert isinstance(server, Server), f"{type(server)} is not Server"
         self.__server: Server = server
@@ -24,8 +24,8 @@ class LdapClient:
 
     @classmethod
     def connect(cls, server, username: str, password: str):
-        from ldap3 import Connection
-        from ldap3 import Server
+        from ldap3 import Connection  # pylint: disable=import-outside-toplevel
+        from ldap3 import Server  # pylint: disable=import-outside-toplevel
 
         assert isinstance(server, Server), f"{type(server)} is not Server"
         return Connection(server, username, password, auto_bind=True)
@@ -34,9 +34,9 @@ class LdapClient:
                filter: str,  # pylint: disable=redefined-builtin
                attrs: Iterable[str], key: str):
         """search entry"""
-        from ldap3 import Attribute
-        from ldap3 import Connection
-        from ldap3 import Entry
+        from ldap3 import Attribute  # pylint: disable=import-outside-toplevel
+        from ldap3 import Connection  # pylint: disable=import-outside-toplevel
+        from ldap3 import Entry  # pylint: disable=import-outside-toplevel
 
         attributes: Set[str] = set(attrs)
         bind: Connection = self.bind
@@ -60,7 +60,7 @@ class LdapClient:
                filter: str,  # pylint: disable=redefined-builtin
                attrs: Iterable[str], username: str, password: str):
         """search user and verify password"""
-        from ldap3 import Entry
+        from ldap3 import Entry  # pylint: disable=import-outside-toplevel
 
         user: Optional[Entry] = self.search(base, filter, attrs, username)
         return user if user and self.verify(user.entry_dn, password) else None
@@ -68,8 +68,8 @@ class LdapClient:
 
 class LdapInit:
     def __init__(self, host: str, port: Optional[int] = None, use_ssl: bool = False):  # noqa:E501
-        from ldap3 import ALL
-        from ldap3 import Server
+        from ldap3 import ALL  # pylint: disable=import-outside-toplevel
+        from ldap3 import Server  # pylint: disable=import-outside-toplevel
 
         self.__server: Server = Server(host=host, port=port, use_ssl=use_ssl, get_info=ALL)  # noqa:E501
 
