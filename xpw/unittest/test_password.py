@@ -78,12 +78,12 @@ class TestPass(unittest.TestCase):
     def test_get_character_set(self):
         self.assertEqual(len(password.Pass.get_character_set()), 94)
 
-    @mock.patch.object(password, "getpass")
+    @mock.patch("getpass.getpass")
     def test_dialog(self, mock_getpass):
         mock_getpass.side_effect = ["test", "test"]
         self.assertEqual(password.Pass.dialog(), "test")
 
-    @mock.patch.object(password, "getpass")
+    @mock.patch("getpass.getpass")
     def test_MaxRetriesError(self, mock_getpass):
         mock_getpass.side_effect = ["test", "unit"]
         self.assertRaises(password.Pass.MaxRetriesError,
@@ -126,7 +126,7 @@ class TestArgon2Hasher(unittest.TestCase):
     def tearDown(self):
         pass
 
-    @mock.patch.object(password.PasswordHasher, "verify")
+    @mock.patch("argon2.PasswordHasher.verify")
     def test_init_value_error(self, mock_verify):
         mock_verify.side_effect = [None]
         self.assertRaises(ValueError, password.Argon2Hasher, "test")

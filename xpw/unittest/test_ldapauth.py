@@ -4,14 +4,31 @@ import unittest
 from unittest import mock
 from unittest.mock import MagicMock
 
+import ldap3
+
 from xpw import ldapauth
+
+
+class FakeAttribute():
+    @property
+    def values(self):
+        return ["demo"]
+
+
+class FakeEntry(ldap3.Entry):
+    def __init__(self):
+        pass
+
+    @property
+    def uid(self):
+        return FakeAttribute()
 
 
 class TestLdapClient(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.server = ldapauth.Server(host="ldap://example.com")
+        cls.server = ldap3.Server(host="ldap://example.com")
         cls.ldap = ldapauth.LdapClient(cls.server, "demo", "demo")
 
     @classmethod
@@ -24,23 +41,22 @@ class TestLdapClient(unittest.TestCase):
     def tearDown(self):
         pass
 
-    @mock.patch.object(ldapauth, "Connection")
+    @mock.patch("ldap3.Connection")
     def test_search(self, mock_connection):
-        fake_entry = MagicMock()
-        fake_entry.uid.values = ["demo"]
+        fake_entry = FakeEntry()
         fake_connection = MagicMock()
         fake_connection.entries = [fake_entry]
         mock_connection.side_effect = [fake_connection]
         self.assertIs(self.ldap.search("ou=users,dc=demo,dc=com", "(uid=*)", ["uid"], "demo"), fake_entry)  # noqa:E501
 
-    @mock.patch.object(ldapauth, "Connection")
+    @mock.patch("ldap3.Connection")
     def test_verify(self, mock_connection):
         fake_connection = MagicMock()
         fake_connection.bind.side_effect = [Exception()]
         mock_connection.side_effect = [fake_connection]
         self.assertFalse(self.ldap.verify("demo", "demo"))
 
-    @mock.patch.object(ldapauth, "Connection")
+    @mock.patch("ldap3.Connection")
     def test_signed(self, mock_connection):
         fake_entry = MagicMock()
         fake_entry.uid.values = ["test"]

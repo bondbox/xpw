@@ -22,7 +22,7 @@ class TestBasicConfig(unittest.TestCase):
     def tearDown(self):
         pass
 
-    @mock.patch.object(configure, "load")
+    @mock.patch("toml.load")
     def test_ldap(self, mock_load):
         mock_load.side_effect = [self.config]
         self.assertIs(configure.BasicConfig.loadf(), self.config)
