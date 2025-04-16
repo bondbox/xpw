@@ -1,7 +1,6 @@
 # coding:utf-8
 
 from enum import IntEnum
-from enum import auto  # noqa:H306
 import string
 import sys
 from typing import Iterable
@@ -38,10 +37,10 @@ class Pass():
     MIN_LENGTH: int = 4  # minimum password length
 
     class CharacterSet(IntEnum):
-        DIGITS = auto()
-        LOWERCASE = auto()
-        UPPERCASE = auto()
-        PUNCTUATION = auto()
+        DIGITS = 1
+        LOWERCASE = 2
+        UPPERCASE = 4
+        PUNCTUATION = 8
         LETTERS = LOWERCASE | UPPERCASE
         DEFAULT = DIGITS | LETTERS | PUNCTUATION
         BASIC = LOWERCASE | DIGITS
@@ -211,7 +210,8 @@ class Argon2Hasher():
     def verify(self, password: str) -> bool:
         """verify password is match"""
         from argon2 import PasswordHasher  # pylint: disable=C0415
-        from argon2.exceptions import VerifyMismatchError  # noqa:501 pylint: disable=C0415
+        from argon2.exceptions import \
+            VerifyMismatchError  # pylint: disable=import-outside-toplevel
 
         try:
             return PasswordHasher().verify(self.hashed, password)
