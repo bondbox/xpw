@@ -42,6 +42,7 @@ class Pass():
         UPPERCASE = 4
         PUNCTUATION = 8
         LETTERS = LOWERCASE | UPPERCASE
+        ALPHANUMERIC = LETTERS | DIGITS
         DEFAULT = DIGITS | LETTERS | PUNCTUATION
         BASIC = LOWERCASE | DIGITS
     Characters = Union[str, CharacterSet]  # password characters type

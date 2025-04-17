@@ -38,21 +38,33 @@ class TestAuthInit(unittest.TestCase):
         with mock.patch.object(authorize.BasicConfig, "loadf") as mock_loadf:
             mock_loadf.side_effect = [self.config]
             auth = authorize.AuthInit.from_file()
+            token = auth.generate_token()
             self.assertIsNone(auth.verify("", "test"))
             self.assertIsNone(auth.verify("test", "unit"))
             self.assertIsNone(auth.verify("demo", "test"))
             self.assertEqual(auth.verify("demo", "demo"), "demo")
+            self.assertEqual(auth.verify("", token), authorize.__project__)
+            self.assertIsNone(auth.delete_token("test"))
+            self.assertIsNone(auth.delete_token("demo"))
+            self.assertIsNone(auth.delete_token(token))
+            self.assertIsNone(auth.delete_token(token))
 
     @mock.patch.object(authorize.LdapConfig, "client")
     def test_ldap_verify(self, mock_client):
         with mock.patch.object(authorize.BasicConfig, "loadf") as mock_loadf:
             mock_loadf.side_effect = [self.ldap_config]
             auth = authorize.AuthInit.from_file()
+            token = auth.generate_token()
             mock_client.signed.side_effect = [None, Exception(), MagicMock(entry_dn="demo")]  # noqa:E501
             self.assertIsNone(auth.verify("", "test"))
             self.assertIsNone(auth.verify("test", "unit"))
             self.assertIsNone(auth.verify("demo", "test"))
             self.assertEqual(auth.verify("demo", "demo"), "demo")
+            self.assertEqual(auth.verify("", token), authorize.__project__)
+            self.assertIsNone(auth.delete_token("test"))
+            self.assertIsNone(auth.delete_token("demo"))
+            self.assertIsNone(auth.delete_token(token))
+            self.assertIsNone(auth.delete_token(token))
 
 
 if __name__ == "__main__":

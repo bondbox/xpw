@@ -3,6 +3,7 @@
 from typing import Dict
 from typing import Optional
 
+from xpw.attribute import __project__
 from xpw.configure import Argon2Config
 from xpw.configure import BasicConfig
 from xpw.configure import CONFIG_DATA_TYPE
@@ -19,6 +20,21 @@ class TokenAuth():
     @property
     def config(self) -> BasicConfig:
         return self.__config
+
+    def delete_token(self, token: str) -> None:
+        if token in self.__tokens:
+            del self.__tokens[token]
+        assert token not in self.__tokens
+
+    def update_token(self, token: str, note: Optional[str] = None) -> None:
+        self.__tokens[token] = note or __project__
+
+    def generate_token(self, note: Optional[str] = None) -> str:
+        from xpw.password import Pass  # pylint:disable=import-outside-toplevel
+
+        secret: Pass = Pass.random_generate(64, Pass.CharacterSet.ALPHANUMERIC)
+        self.update_token(token := secret.value, note)
+        return token
 
     def password_verify(self, username: str, password: Optional[str] = None) -> Optional[str]:  # noqa:E501
         raise NotImplementedError()
