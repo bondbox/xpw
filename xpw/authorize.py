@@ -12,7 +12,7 @@ from xpw.configure import LdapConfig
 from xpw.password import Argon2Hasher
 
 
-class BasicAuth(ABC):
+class TokenAuth(ABC):
     def __init__(self, config: BasicConfig):
         self.__config: BasicConfig = config
 
@@ -25,7 +25,7 @@ class BasicAuth(ABC):
         raise NotImplementedError()
 
 
-class Argon2Auth(BasicAuth):
+class Argon2Auth(TokenAuth):
     def __init__(self, datas: CONFIG_DATA_TYPE):
         super().__init__(Argon2Config(datas))
 
@@ -44,7 +44,7 @@ class Argon2Auth(BasicAuth):
         return None
 
 
-class LdapAuth(BasicAuth):
+class LdapAuth(TokenAuth):
     def __init__(self, datas: CONFIG_DATA_TYPE):
         super().__init__(LdapConfig(datas))
 
@@ -73,7 +73,7 @@ class AuthInit():  # pylint: disable=too-few-public-methods
     }
 
     @classmethod
-    def from_file(cls, path: str = DEFAULT_CONFIG_FILE) -> BasicAuth:
+    def from_file(cls, path: str = DEFAULT_CONFIG_FILE) -> TokenAuth:
         config: CONFIG_DATA_TYPE = BasicConfig.loadf(path)
         method: str = config.get("auth_method", Argon2Config.TYPE)
         return cls.METHODS[method](config)
