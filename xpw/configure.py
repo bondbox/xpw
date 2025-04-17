@@ -33,6 +33,11 @@ class BasicConfig():
 
         return dumps(self.datas)
 
+    def dumpf(self, path: str = DEFAULT_CONFIG_FILE) -> None:
+        """dump config to toml file"""
+        with open(path, "w", encoding="utf-8") as file:
+            file.write(self.dumps())
+
 
 class Argon2Config(BasicConfig):
     SECTION = "argon2"

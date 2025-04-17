@@ -31,6 +31,12 @@ class TestBasicConfig(unittest.TestCase):
         config = configure.BasicConfig(self.config)
         self.assertIsInstance(config.dumps(), str)
 
+    @mock.patch.object(configure, "open")
+    def test_dumpf(self, mock_open):
+        with mock.mock_open(mock_open):
+            config = configure.BasicConfig(self.config)
+            self.assertIsNone(config.dumpf())
+
 
 class TestLdapConfig(unittest.TestCase):
 
