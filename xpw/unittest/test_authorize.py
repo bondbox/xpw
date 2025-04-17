@@ -11,8 +11,8 @@ class TestAuthInit(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.config = {"users": {"demo": "demo"}}
-        cls.ldap_config = {
+        cls.datas = {"users": {"demo": "demo"}}
+        cls.ldap_datas = {
             "auth_method": "ldap",
             "ldap": {
                 "server": "example.com",
@@ -23,6 +23,7 @@ class TestAuthInit(unittest.TestCase):
                 "search_attributes": ["uid"],
             }
         }
+        cls.path = "test"
 
     @classmethod
     def tearDownClass(cls):
@@ -36,7 +37,7 @@ class TestAuthInit(unittest.TestCase):
 
     def test_verify(self):
         with mock.patch.object(authorize.BasicConfig, "loadf") as mock_loadf:
-            mock_loadf.side_effect = [self.config]
+            mock_loadf.side_effect = [authorize.BasicConfig(self.path, self.datas)]  # noqa:E501
             auth = authorize.AuthInit.from_file()
             token = auth.generate_token()
             self.assertIsNone(auth.verify("", "test"))
@@ -52,7 +53,7 @@ class TestAuthInit(unittest.TestCase):
     @mock.patch.object(authorize.LdapConfig, "client")
     def test_ldap_verify(self, mock_client):
         with mock.patch.object(authorize.BasicConfig, "loadf") as mock_loadf:
-            mock_loadf.side_effect = [self.ldap_config]
+            mock_loadf.side_effect = [authorize.BasicConfig(self.path, self.ldap_datas)]  # noqa:E501
             auth = authorize.AuthInit.from_file()
             token = auth.generate_token()
             mock_client.signed.side_effect = [None, Exception(), MagicMock(entry_dn="demo")]  # noqa:E501

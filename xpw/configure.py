@@ -3,6 +3,7 @@
 from typing import Any
 from typing import Dict
 from typing import List
+from typing import Optional
 
 from xpw.ldapauth import LdapClient
 from xpw.ldapauth import LdapInit
@@ -13,19 +14,24 @@ DEFAULT_CONFIG_FILE = "xpwauth"
 
 
 class BasicConfig():
-    def __init__(self, datas: CONFIG_DATA_TYPE):
+    def __init__(self, path: str, datas: CONFIG_DATA_TYPE):
         self.__datas: CONFIG_DATA_TYPE = datas
+        self.__path: str = path
+
+    @property
+    def path(self) -> str:
+        return self.__path
 
     @property
     def datas(self) -> CONFIG_DATA_TYPE:
         return self.__datas
 
     @classmethod
-    def loadf(cls, path: str = DEFAULT_CONFIG_FILE) -> CONFIG_DATA_TYPE:
+    def loadf(cls, path: str = DEFAULT_CONFIG_FILE) -> "BasicConfig":
         """load config from toml file"""
         from toml import load  # pylint: disable=import-outside-toplevel
 
-        return load(path)
+        return cls(path=path, datas=load(path))
 
     def dumps(self) -> str:
         """dump config to toml string"""
@@ -33,19 +39,19 @@ class BasicConfig():
 
         return dumps(self.datas)
 
-    def dumpf(self, path: str = DEFAULT_CONFIG_FILE) -> None:
+    def dumpf(self, path: Optional[str] = None) -> None:
         """dump config to toml file"""
-        with open(path, "w", encoding="utf-8") as file:
+        with open(path or self.path, "w", encoding="utf-8") as file:
             file.write(self.dumps())
 
 
 class Argon2Config(BasicConfig):
     SECTION = "argon2"
 
-    def __init__(self, datas: CONFIG_DATA_TYPE):
-        datas.setdefault(self.SECTION, {})
-        datas.setdefault("users", {})
-        super().__init__(datas)
+    def __init__(self, config: BasicConfig):
+        config.datas.setdefault(self.SECTION, {})
+        config.datas.setdefault("users", {})
+        super().__init__(config.path, config.datas)
 
     def __getitem__(self, user: str) -> Argon2Hasher:
         return self.generate(self.datas["users"][user])
@@ -89,9 +95,9 @@ class Argon2Config(BasicConfig):
 class LdapConfig(BasicConfig):
     SECTION = "ldap"
 
-    def __init__(self, datas: CONFIG_DATA_TYPE):
-        datas.setdefault(self.SECTION, {})
-        super().__init__(datas)
+    def __init__(self, config: BasicConfig):
+        config.datas.setdefault(self.SECTION, {})
+        super().__init__(config.path, config.datas)
 
     @property
     def server(self) -> str:

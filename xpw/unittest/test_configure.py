@@ -10,40 +10,38 @@ class TestBasicConfig(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.config = {"users": {"demo": "demo"}}
+        cls.datas = {"users": {"demo": "demo"}}
+        cls.path = "test"
 
     @classmethod
     def tearDownClass(cls):
         pass
 
     def setUp(self):
-        pass
+        self.config = configure.BasicConfig(self.path, self.datas)
 
     def tearDown(self):
         pass
 
     @mock.patch("toml.load")
     def test_loadf(self, mock_load):
-        mock_load.side_effect = [self.config]
-        self.assertIs(configure.BasicConfig.loadf(), self.config)
+        mock_load.side_effect = [self.datas]
+        self.assertIsInstance(configure.BasicConfig.loadf(), configure.BasicConfig)  # noqa:E501
 
     def test_dumps(self):
-        config = configure.BasicConfig(self.config)
-        self.assertIsInstance(config.dumps(), str)
+        self.assertIsInstance(self.config.dumps(), str)
 
     @mock.patch.object(configure, "open")
     def test_dumpf(self, mock_open):
         with mock.mock_open(mock_open):
-            config = configure.BasicConfig(self.config)
-            self.assertIsNone(config.dumpf())
+            self.assertIsNone(self.config.dumpf())
 
 
 class TestLdapConfig(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.config = {"users": {"demo": "demo"}}
-        cls.ldap_config = {
+        cls.ldap_datas = {
             "auth_method": "ldap",
             "ldap": {
                 "server": "example.com",
@@ -54,20 +52,21 @@ class TestLdapConfig(unittest.TestCase):
                 "search_attributes": ["uid"],
             }
         }
+        cls.path = "test"
 
     @classmethod
     def tearDownClass(cls):
         pass
 
     def setUp(self):
-        pass
+        self.config = configure.BasicConfig(self.path, self.ldap_datas)
 
     def tearDown(self):
         pass
 
     @mock.patch.object(configure.LdapInit, "bind")
     def test_ldap(self, mock_bind):
-        config = configure.LdapConfig(self.ldap_config)
+        config = configure.LdapConfig(self.config)
         self.assertIs(config.client, mock_bind())
 
 

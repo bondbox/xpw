@@ -5,7 +5,6 @@ from typing import Optional
 from xpw.attribute import __project__
 from xpw.configure import Argon2Config
 from xpw.configure import BasicConfig
-from xpw.configure import CONFIG_DATA_TYPE
 from xpw.configure import DEFAULT_CONFIG_FILE
 from xpw.configure import LdapConfig
 from xpw.password import Argon2Hasher
@@ -53,8 +52,8 @@ class TokenAuth():
 
 
 class Argon2Auth(TokenAuth):
-    def __init__(self, datas: CONFIG_DATA_TYPE):
-        super().__init__(Argon2Config(datas))
+    def __init__(self, config: BasicConfig):
+        super().__init__(Argon2Config(config))
 
     @property
     def config(self) -> Argon2Config:
@@ -72,8 +71,8 @@ class Argon2Auth(TokenAuth):
 
 
 class LdapAuth(TokenAuth):
-    def __init__(self, datas: CONFIG_DATA_TYPE):
-        super().__init__(LdapConfig(datas))
+    def __init__(self, config: BasicConfig):
+        super().__init__(LdapConfig(config))
 
     @property
     def config(self) -> LdapConfig:
@@ -101,6 +100,6 @@ class AuthInit():  # pylint: disable=too-few-public-methods
 
     @classmethod
     def from_file(cls, path: str = DEFAULT_CONFIG_FILE) -> TokenAuth:
-        config: CONFIG_DATA_TYPE = BasicConfig.loadf(path)
-        method: str = config.get("auth_method", Argon2Config.SECTION)
+        config: BasicConfig = BasicConfig.loadf(path)
+        method: str = config.datas.get("auth_method", Argon2Config.SECTION)
         return cls.METHODS[method](config)
