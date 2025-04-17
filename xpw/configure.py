@@ -27,6 +27,12 @@ class BasicConfig():
 
         return load(path)
 
+    def dumps(self) -> str:
+        """dump config to toml string"""
+        from toml import dumps  # pylint: disable=import-outside-toplevel
+
+        return dumps(self.datas)
+
 
 class Argon2Config(BasicConfig):
     SECTION = "argon2"

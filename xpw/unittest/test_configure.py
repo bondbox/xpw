@@ -23,9 +23,13 @@ class TestBasicConfig(unittest.TestCase):
         pass
 
     @mock.patch("toml.load")
-    def test_ldap(self, mock_load):
+    def test_loadf(self, mock_load):
         mock_load.side_effect = [self.config]
         self.assertIs(configure.BasicConfig.loadf(), self.config)
+
+    def test_dumps(self):
+        config = configure.BasicConfig(self.config)
+        self.assertIsInstance(config.dumps(), str)
 
 
 class TestLdapConfig(unittest.TestCase):
