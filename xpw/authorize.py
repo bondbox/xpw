@@ -1,6 +1,5 @@
 # coding:utf-8
 
-from typing import Dict
 from typing import Optional
 
 from xpw.attribute import __project__
@@ -13,21 +12,24 @@ from xpw.password import Argon2Hasher
 
 
 class TokenAuth():
+    SECTION = "tokens"
+
     def __init__(self, config: BasicConfig):
+        config.datas.setdefault(self.SECTION, {})
+        assert isinstance(config.datas[self.SECTION], dict)
         self.__config: BasicConfig = config
-        self.__tokens: Dict[str, str] = {}
 
     @property
     def config(self) -> BasicConfig:
         return self.__config
 
     def delete_token(self, token: str) -> None:
-        if token in self.__tokens:
-            del self.__tokens[token]
-        assert token not in self.__tokens
+        if token in self.config.datas[self.SECTION]:
+            del self.config.datas[self.SECTION][token]
+        assert token not in self.config.datas[self.SECTION]
 
     def update_token(self, token: str, note: Optional[str] = None) -> None:
-        self.__tokens[token] = note or __project__
+        self.config.datas[self.SECTION][token] = note or __project__
 
     def generate_token(self, note: Optional[str] = None) -> str:
         from xpw.password import Pass  # pylint:disable=import-outside-toplevel
@@ -40,7 +42,7 @@ class TokenAuth():
         raise NotImplementedError()
 
     def token_verify(self, token: str) -> Optional[str]:
-        return self.__tokens.get(token)
+        return self.config.datas[self.SECTION].get(token)
 
     def verify(self, k: str, v: Optional[str] = None) -> Optional[str]:
         if k == "":
@@ -93,12 +95,12 @@ class LdapAuth(TokenAuth):
 
 class AuthInit():  # pylint: disable=too-few-public-methods
     METHODS = {
-        Argon2Config.TYPE: Argon2Auth,
-        LdapConfig.TYPE: LdapAuth,
+        Argon2Config.SECTION: Argon2Auth,
+        LdapConfig.SECTION: LdapAuth,
     }
 
     @classmethod
     def from_file(cls, path: str = DEFAULT_CONFIG_FILE) -> TokenAuth:
         config: CONFIG_DATA_TYPE = BasicConfig.loadf(path)
-        method: str = config.get("auth_method", Argon2Config.TYPE)
+        method: str = config.get("auth_method", Argon2Config.SECTION)
         return cls.METHODS[method](config)

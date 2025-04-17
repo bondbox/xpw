@@ -29,10 +29,10 @@ class BasicConfig():
 
 
 class Argon2Config(BasicConfig):
-    TYPE = "argon2"
+    SECTION = "argon2"
 
     def __init__(self, datas: CONFIG_DATA_TYPE):
-        datas.setdefault(self.TYPE, {})
+        datas.setdefault(self.SECTION, {})
         datas.setdefault("users", {})
         super().__init__(datas)
 
@@ -41,27 +41,27 @@ class Argon2Config(BasicConfig):
 
     @property
     def time_cost(self) -> int:
-        return self.datas[self.TYPE].get("time_cost", Argon2Hasher.DEFAULT_TIME_COST)  # noqa:E501
+        return self.datas[self.SECTION].get("time_cost", Argon2Hasher.DEFAULT_TIME_COST)  # noqa:E501
 
     @property
     def memory_cost(self) -> int:
-        return self.datas[self.TYPE].get("memory_cost", Argon2Hasher.DEFAULT_MEMORY_COST)  # noqa:E501
+        return self.datas[self.SECTION].get("memory_cost", Argon2Hasher.DEFAULT_MEMORY_COST)  # noqa:E501
 
     @property
     def parallelism(self) -> int:
-        return self.datas[self.TYPE].get("parallelism", Argon2Hasher.DEFAULT_PARALLELISM)  # noqa:E501
+        return self.datas[self.SECTION].get("parallelism", Argon2Hasher.DEFAULT_PARALLELISM)  # noqa:E501
 
     @property
     def hash_len(self) -> int:
-        return self.datas[self.TYPE].get("hash_length", Argon2Hasher.DEFAULT_HASH_LENGTH)  # noqa:E501
+        return self.datas[self.SECTION].get("hash_length", Argon2Hasher.DEFAULT_HASH_LENGTH)  # noqa:E501
 
     @property
     def salt_len(self) -> int:
-        return self.datas[self.TYPE].get("salt_length", Argon2Hasher.DEFAULT_SALT_LENGTH)  # noqa:E501
+        return self.datas[self.SECTION].get("salt_length", Argon2Hasher.DEFAULT_SALT_LENGTH)  # noqa:E501
 
     @property
     def salt(self) -> str:
-        return self.datas[self.TYPE].get("salt", None)
+        return self.datas[self.SECTION].get("salt", None)
 
     def generate(self, password: str) -> Argon2Hasher:
         return Argon2Hasher(password) if password.startswith("$") else self.encode(password)  # noqa:E501
@@ -76,35 +76,35 @@ class Argon2Config(BasicConfig):
 
 
 class LdapConfig(BasicConfig):
-    TYPE = "ldap"
+    SECTION = "ldap"
 
     def __init__(self, datas: CONFIG_DATA_TYPE):
-        datas.setdefault(self.TYPE, {})
+        datas.setdefault(self.SECTION, {})
         super().__init__(datas)
 
     @property
     def server(self) -> str:
-        return self.datas[self.TYPE]["server"]
+        return self.datas[self.SECTION]["server"]
 
     @property
     def bind_dn(self) -> str:
-        return self.datas[self.TYPE]["bind_username"]
+        return self.datas[self.SECTION]["bind_username"]
 
     @property
     def bind_pw(self) -> str:
-        return self.datas[self.TYPE]["bind_password"]
+        return self.datas[self.SECTION]["bind_password"]
 
     @property
     def base_dn(self) -> str:
-        return self.datas[self.TYPE]["search_base"]
+        return self.datas[self.SECTION]["search_base"]
 
     @property
     def filter(self) -> str:
-        return self.datas[self.TYPE]["search_filter"]
+        return self.datas[self.SECTION]["search_filter"]
 
     @property
     def attributes(self) -> List[str]:
-        return self.datas[self.TYPE]["search_attributes"]
+        return self.datas[self.SECTION]["search_attributes"]
 
     @property
     def client(self) -> LdapClient:
