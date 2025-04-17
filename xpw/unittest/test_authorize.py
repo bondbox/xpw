@@ -38,6 +38,7 @@ class TestAuthInit(unittest.TestCase):
         with mock.patch.object(authorize.BasicConfig, "loadf") as mock_loadf:
             mock_loadf.side_effect = [self.config]
             auth = authorize.AuthInit.from_file()
+            self.assertIsNone(auth.verify("", "test"))
             self.assertIsNone(auth.verify("test", "unit"))
             self.assertIsNone(auth.verify("demo", "test"))
             self.assertEqual(auth.verify("demo", "demo"), "demo")
@@ -48,6 +49,7 @@ class TestAuthInit(unittest.TestCase):
             mock_loadf.side_effect = [self.ldap_config]
             auth = authorize.AuthInit.from_file()
             mock_client.signed.side_effect = [None, Exception(), MagicMock(entry_dn="demo")]  # noqa:E501
+            self.assertIsNone(auth.verify("", "test"))
             self.assertIsNone(auth.verify("test", "unit"))
             self.assertIsNone(auth.verify("demo", "test"))
             self.assertEqual(auth.verify("demo", "demo"), "demo")

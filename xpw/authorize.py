@@ -1,7 +1,6 @@
 # coding:utf-8
 
-from abc import ABC
-from abc import abstractmethod
+from typing import Dict
 from typing import Optional
 
 from xpw.configure import Argon2Config
@@ -12,17 +11,27 @@ from xpw.configure import LdapConfig
 from xpw.password import Argon2Hasher
 
 
-class TokenAuth(ABC):
+class TokenAuth():
     def __init__(self, config: BasicConfig):
         self.__config: BasicConfig = config
+        self.__tokens: Dict[str, str] = {}
 
     @property
     def config(self) -> BasicConfig:
         return self.__config
 
-    @abstractmethod
-    def verify(self, username: str, password: Optional[str] = None) -> Optional[str]:  # noqa:E501
+    def password_verify(self, username: str, password: Optional[str] = None) -> Optional[str]:  # noqa:E501
         raise NotImplementedError()
+
+    def token_verify(self, token: str) -> Optional[str]:
+        return self.__tokens.get(token)
+
+    def verify(self, k: str, v: Optional[str] = None) -> Optional[str]:
+        if k == "":
+            assert isinstance(v, str)
+            return self.token_verify(v)
+
+        return self.password_verify(k, v)
 
 
 class Argon2Auth(TokenAuth):
@@ -34,7 +43,7 @@ class Argon2Auth(TokenAuth):
         assert isinstance(config := super().config, Argon2Config)
         return config
 
-    def verify(self, username: str, password: Optional[str] = None) -> Optional[str]:  # noqa:E501
+    def password_verify(self, username: str, password: Optional[str] = None) -> Optional[str]:  # noqa:E501
         try:
             hasher: Argon2Hasher = self.config[username]
             if hasher.verify(password or input("password: ")):
@@ -53,7 +62,7 @@ class LdapAuth(TokenAuth):
         assert isinstance(config := super().config, LdapConfig)
         return config
 
-    def verify(self, username: str, password: Optional[str] = None) -> Optional[str]:  # noqa:E501
+    def password_verify(self, username: str, password: Optional[str] = None) -> Optional[str]:  # noqa:E501
         try:
             config: LdapConfig = self.config
             entry = config.client.signed(config.base_dn, config.filter,
