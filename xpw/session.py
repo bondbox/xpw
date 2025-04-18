@@ -1,7 +1,6 @@
 # coding:utf-8
 
 from typing import Optional
-from uuid import uuid4
 
 from xkits_lib.cache import CacheExpired
 from xkits_lib.cache import CacheItem
@@ -11,6 +10,38 @@ from xkits_lib.unit import TimeUnit
 
 from xpw.password import Pass
 from xpw.password import Secret
+
+
+class SessionID():
+    def __init__(self, user_agent: str, session_id: Optional[str] = None):
+        self.__session_id: str = session_id or self.generate()
+        self.__user_agent: str = user_agent
+
+    @property
+    def number(self) -> str:
+        return self.__session_id
+
+    @property
+    def detail(self) -> str:
+        return self.__user_agent
+
+    @property
+    def digest(self) -> str:
+        return self.encode(self.detail)
+
+    def verify(self, user_agent) -> bool:
+        return self.digest == self.encode(user_agent)
+
+    @classmethod
+    def encode(cls, user_agent: str) -> str:
+        from hashlib import md5  # pylint: disable=import-outside-toplevel
+
+        return md5(user_agent.encode("utf-8")).hexdigest()
+
+    @classmethod
+    def generate(cls) -> str:
+        """Generate a 32-bit hexadecimal random session_id"""
+        return Pass.random_generate(32, "0123456789abcdef").value
 
 
 class SessionKeys(ItemPool[str, Optional[str]]):
@@ -25,7 +56,7 @@ class SessionKeys(ItemPool[str, Optional[str]]):
         return self.__secret
 
     def search(self, s: Optional[str] = None) -> CacheItem[str, Optional[str]]:  # noqa:E501
-        session_id: str = s or str(uuid4())
+        session_id: str = s or SessionID.generate()
         if session_id not in self:
             self.put(session_id, None)
         return self.get(session_id)
