@@ -1,7 +1,7 @@
 # coding:utf-8
 
 __project__ = "xpw"
-__version__ = "0.7"
+__version__ = "0.8"
 __urlhome__ = "https://github.com/bondbox/xpw/"
 __description__ = "Password management and authentication"
 
