@@ -64,7 +64,10 @@ class SessionKeys(ItemPool[str, Optional[str]]):
     def verify(self, session_id: str, secret_key: Optional[str] = None) -> bool:  # noqa:E501
         try:
             token: str = secret_key or self.secret.key
-            return self[session_id].data == token
+            if (session := self[session_id]).data == token:
+                session.renew()
+                return True
+            return False
         except (CacheExpired, CacheMiss):
             return False
 

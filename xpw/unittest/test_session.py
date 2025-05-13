@@ -61,6 +61,7 @@ class TestSessionKeys(unittest.TestCase):
     def test_verify(self):
         self.assertEqual(self.skeys.sign_in("test"), self.skeys.secret.key)
         self.assertFalse(self.skeys.verify("unit", self.skeys.secret.key))
+        self.assertFalse(self.skeys.verify("test", "unittest1234567890"))
         self.assertTrue(self.skeys.verify("test", self.skeys.secret.key))
 
 
