@@ -53,6 +53,9 @@ class Argon2Config(BasicConfig):
         config.datas.setdefault("users", {})
         super().__init__(config.path, config.datas)
 
+    def __contains__(self, user: str) -> bool:
+        return user in self.datas["users"]
+
     def __getitem__(self, user: str) -> Argon2Hasher:
         return self.generate(self.datas["users"][user])
 
@@ -90,6 +93,40 @@ class Argon2Config(BasicConfig):
                                  parallelism=self.parallelism,
                                  hash_len=self.hash_len,
                                  salt_len=self.salt_len)
+
+    def change(self, username: str, old_password: str, new_password: str) -> bool:  # noqa:E501
+        assert isinstance(users := self.datas["users"], dict)
+        if username not in users:
+            raise ValueError(f"user '{username}' not exists")
+
+        if not self[username].verify(old_password):
+            raise ValueError("password error")
+
+        users[username] = self.encode(new_password).hashed
+        self.dumpf()
+
+        return self[username].verify(new_password)
+
+    def delete(self, username: str, password: str) -> bool:
+        assert isinstance(users := self.datas["users"], dict)
+        if username not in users:
+            raise ValueError(f"user '{username}' not exists")
+
+        if not self[username].verify(password):
+            raise ValueError("password error")
+
+        del users[username]
+        return username not in self
+
+    def create(self, username: str, password: str) -> Argon2Hasher:
+        assert isinstance(users := self.datas["users"], dict)
+        if username in users:
+            raise ValueError(f"user '{username}' already exists")
+
+        users.setdefault(username, self.encode(password).hashed)
+        self.dumpf()
+
+        return self[username]
 
 
 class LdapConfig(BasicConfig):

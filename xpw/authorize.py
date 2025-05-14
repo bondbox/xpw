@@ -49,6 +49,18 @@ class TokenAuth():
     def verify_password(self, username: str, password: Optional[str] = None) -> Optional[str]:  # noqa:E501
         raise NotImplementedError()
 
+    def change_password(self, username: str, old_password: str, new_password: str) -> Optional[str]:  # noqa:E501
+        """change user password"""
+        raise NotImplementedError()
+
+    def create_user(self, username: str, password: str) -> Optional[str]:
+        """create new user"""
+        raise NotImplementedError()
+
+    def delete_user(self, username: str, password: str) -> bool:
+        """delete user"""
+        raise NotImplementedError()
+
     def verify(self, k: str, v: Optional[str] = None) -> Optional[str]:
         if k == "":  # no available username, verify token
             assert isinstance(v, str)
@@ -75,6 +87,17 @@ class Argon2Auth(TokenAuth):
             pass
         return None
 
+    def change_password(self, username: str, old_password: str, new_password: str) -> Optional[str]:  # noqa:E501
+        self.config.change(username, old_password, new_password)
+        return self.verify_password(username, new_password)
+
+    def create_user(self, username: str, password: str) -> Optional[str]:
+        self.config.create(username, password)
+        return self.verify_password(username, password)
+
+    def delete_user(self, username: str, password: str) -> bool:
+        return self.config.delete(username, password)
+
 
 class LdapAuth(TokenAuth):
     def __init__(self, config: BasicConfig):
@@ -96,6 +119,15 @@ class LdapAuth(TokenAuth):
         except Exception:  # pylint: disable=broad-exception-caught
             pass
         return None
+
+    def change_password(self, username: str, old_password: str, new_password: str) -> Optional[str]:  # noqa:E501
+        raise NotImplementedError()
+
+    def create_user(self, username: str, password: str) -> Optional[str]:
+        raise NotImplementedError()
+
+    def delete_user(self, username: str, password: str) -> bool:
+        raise NotImplementedError()
 
 
 class AuthInit():  # pylint: disable=too-few-public-methods

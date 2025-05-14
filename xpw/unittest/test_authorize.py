@@ -69,6 +69,21 @@ class TestAuthInit(unittest.TestCase):
             self.assertIsNone(auth.delete_token(token))
             self.assertIsNone(auth.delete_token(token))
 
+    def test_user(self):
+        with mock.patch.object(authorize.BasicConfig, "loadf") as mock_loadf, \
+                mock.patch.object(authorize.BasicConfig, "dumpf"):
+            mock_loadf.side_effect = [authorize.BasicConfig(self.path, self.datas)]  # noqa:E501
+            auth = authorize.AuthInit.from_file()
+            self.assertEqual(auth.create_user("user", "unit"), "user")
+            self.assertRaises(ValueError, auth.create_user, "user", "unit")
+            self.assertRaises(ValueError, auth.change_password, "abcd", "unit", "test")  # noqa:E501
+            self.assertRaises(ValueError, auth.change_password, "user", "demo", "test")  # noqa:E501
+            self.assertEqual(auth.change_password("user", "unit", "test"), "user")  # noqa:E501
+            self.assertRaises(ValueError, auth.change_password, "user", "unit", "test")  # noqa:E501
+            self.assertRaises(ValueError, auth.delete_user, "user", "unit")
+            self.assertTrue(auth.delete_user("user", "test"))
+            self.assertRaises(ValueError, auth.delete_user, "user", "test")
+
 
 if __name__ == "__main__":
     unittest.main()
