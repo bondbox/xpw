@@ -10,15 +10,17 @@ class TestBasicConfig(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.datas = {"users": {"demo": "demo"}}
+        cls.datas = {"users": {"demo": "demo"}, "admin": "demo"}
         cls.path = "test"
 
     @classmethod
     def tearDownClass(cls):
         pass
 
+    @mock.patch.object(configure.BasicConfig, "dumpf", mock.MagicMock())
     def setUp(self):
         self.config = configure.BasicConfig(self.path, self.datas)
+        self.assertEqual(self.config.administrators, ["demo"])
 
     def tearDown(self):
         pass
@@ -43,6 +45,7 @@ class TestLdapConfig(unittest.TestCase):
     def setUpClass(cls):
         cls.ldap_datas = {
             "auth_method": "ldap",
+            "admin": ("demo", "user"),
             "ldap": {
                 "server": "example.com",
                 "bind_username": "cn=admin,dc=demo,dc=com",
@@ -58,12 +61,15 @@ class TestLdapConfig(unittest.TestCase):
     def tearDownClass(cls):
         pass
 
+    @mock.patch.object(configure.BasicConfig, "dumpf", mock.MagicMock())
     def setUp(self):
         self.config = configure.BasicConfig(self.path, self.ldap_datas)
+        self.assertEqual(self.config.administrators, ["demo", "user"])
 
     def tearDown(self):
         pass
 
+    @mock.patch.object(configure.BasicConfig, "dumpf", mock.MagicMock())
     @mock.patch.object(configure.LdapInit, "bind")
     def test_ldap(self, mock_bind):
         config = configure.LdapConfig(self.config)

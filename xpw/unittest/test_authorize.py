@@ -35,9 +35,9 @@ class TestAuthInit(unittest.TestCase):
     def tearDown(self):
         pass
 
+    @mock.patch.object(authorize.BasicConfig, "dumpf", mock.MagicMock())
     def test_verify(self):
-        with mock.patch.object(authorize.BasicConfig, "loadf") as mock_loadf, \
-                mock.patch.object(authorize.BasicConfig, "dumpf"):
+        with mock.patch.object(authorize.BasicConfig, "loadf") as mock_loadf:
             mock_loadf.side_effect = [authorize.BasicConfig(self.path, self.datas)]  # noqa:E501
             auth = authorize.AuthInit.from_file()
             token = auth.generate_token()
@@ -51,10 +51,10 @@ class TestAuthInit(unittest.TestCase):
             self.assertIsNone(auth.delete_token(token))
             self.assertIsNone(auth.delete_token(token))
 
+    @mock.patch.object(authorize.BasicConfig, "dumpf", mock.MagicMock())
     @mock.patch.object(authorize.LdapConfig, "client")
     def test_ldap_verify(self, mock_client):
-        with mock.patch.object(authorize.BasicConfig, "loadf") as mock_loadf, \
-                mock.patch.object(authorize.BasicConfig, "dumpf"):
+        with mock.patch.object(authorize.BasicConfig, "loadf") as mock_loadf:
             mock_loadf.side_effect = [authorize.BasicConfig(self.path, self.ldap_datas)]  # noqa:E501
             auth = authorize.AuthInit.from_file()
             token = auth.generate_token()
@@ -69,9 +69,9 @@ class TestAuthInit(unittest.TestCase):
             self.assertIsNone(auth.delete_token(token))
             self.assertIsNone(auth.delete_token(token))
 
+    @mock.patch.object(authorize.BasicConfig, "dumpf", mock.MagicMock())
     def test_user(self):
-        with mock.patch.object(authorize.BasicConfig, "loadf") as mock_loadf, \
-                mock.patch.object(authorize.BasicConfig, "dumpf"):
+        with mock.patch.object(authorize.BasicConfig, "loadf") as mock_loadf:
             mock_loadf.side_effect = [authorize.BasicConfig(self.path, self.datas)]  # noqa:E501
             auth = authorize.AuthInit.from_file()
             self.assertEqual(auth.create_user("user", "unit"), "user")
