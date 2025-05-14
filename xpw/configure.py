@@ -5,6 +5,8 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
+from xkits_file import SafeKits
+
 from xpw.ldapauth import LdapClient
 from xpw.ldapauth import LdapInit
 from xpw.password import Argon2Hasher
@@ -50,6 +52,7 @@ class BasicConfig():
         """load config from toml file"""
         from toml import load  # pylint: disable=import-outside-toplevel
 
+        assert SafeKits.restore(path=path), f"failed to restore config file: '{path}'"  # noqa:E501
         return cls(path=path, datas=load(path))
 
     def dumps(self) -> str:
@@ -60,8 +63,11 @@ class BasicConfig():
 
     def dumpf(self, path: Optional[str] = None) -> None:
         """dump config to toml file"""
-        with open(path or self.path, "w", encoding="utf-8") as file:
-            file.write(self.dumps())
+        file: str = path or self.path
+        assert SafeKits.create_backup(path=file, copy=False), f"failed to backup config file: '{file}'"  # noqa:E501
+        with open(file, "w", encoding="utf-8") as whdl:
+            whdl.write(self.dumps())
+        assert SafeKits.delete_backup(path=file), f"failed to delete config backup file: '{file}'"  # noqa:E501
 
 
 class Argon2Config(BasicConfig):

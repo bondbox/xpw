@@ -1,5 +1,6 @@
-xkits_command>=0.2
-xkits_lib>=0.2.1
+xkits-command>=0.2
+xkits-file>=0.5.1
+xkits-lib>=0.2.1
 argon2-cffi
 ldap3
 toml
