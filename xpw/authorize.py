@@ -26,6 +26,9 @@ class TokenAuth():
     def tokens(self) -> Dict[str, str]:
         return self.config.datas[self.SECTION]
 
+    def verify_token(self, code: str) -> Optional[str]:
+        return self.tokens.get(code)
+
     def delete_token(self, code: str) -> None:
         if code in (tokens := self.tokens):
             del tokens[code]
@@ -43,18 +46,15 @@ class TokenAuth():
         self.update_token(code := secret.value, user)
         return code
 
-    def password_verify(self, username: str, password: Optional[str] = None) -> Optional[str]:  # noqa:E501
+    def verify_password(self, username: str, password: Optional[str] = None) -> Optional[str]:  # noqa:E501
         raise NotImplementedError()
-
-    def token_verify(self, code: str) -> Optional[str]:
-        return self.tokens.get(code)
 
     def verify(self, k: str, v: Optional[str] = None) -> Optional[str]:
         if k == "":  # no available username, verify token
             assert isinstance(v, str)
-            return self.token_verify(v)
+            return self.verify_token(v)
 
-        return self.password_verify(k, v)
+        return self.verify_password(k, v)
 
 
 class Argon2Auth(TokenAuth):
@@ -66,7 +66,7 @@ class Argon2Auth(TokenAuth):
         assert isinstance(config := super().config, Argon2Config)
         return config
 
-    def password_verify(self, username: str, password: Optional[str] = None) -> Optional[str]:  # noqa:E501
+    def verify_password(self, username: str, password: Optional[str] = None) -> Optional[str]:  # noqa:E501
         try:
             hasher: Argon2Hasher = self.config[username]
             if hasher.verify(password or input("password: ")):
@@ -85,7 +85,7 @@ class LdapAuth(TokenAuth):
         assert isinstance(config := super().config, LdapConfig)
         return config
 
-    def password_verify(self, username: str, password: Optional[str] = None) -> Optional[str]:  # noqa:E501
+    def verify_password(self, username: str, password: Optional[str] = None) -> Optional[str]:  # noqa:E501
         try:
             config: LdapConfig = self.config
             entry = config.client.signed(config.base_dn, config.filter,
