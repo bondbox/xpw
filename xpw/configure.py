@@ -17,23 +17,15 @@ DEFAULT_CONFIG_FILE = "xpwauth"
 
 
 class BasicConfig():
-    SECRET_SECTION = "secret"
-    ADMIN_SECTION = "admin"
 
     def __init__(self, path: str, datas: CONFIG_DATA_TYPE):
         self.__datas: CONFIG_DATA_TYPE = datas
         self.__path: str = path
 
-        if self.SECRET_SECTION not in self.datas:
+        if "secret" not in self.datas:
             secret_key: str = Pass.random_generate(64).value
-            self.datas.setdefault(self.SECRET_SECTION, secret_key)
+            self.datas.setdefault("secret", secret_key)
             self.dumpf()
-
-        self.datas.setdefault(self.ADMIN_SECTION, [])
-        if isinstance(admin := self.datas[self.ADMIN_SECTION], str):
-            self.datas[self.ADMIN_SECTION] = [admin]
-        elif not isinstance(admin, list):
-            self.datas[self.ADMIN_SECTION] = list(admin)
 
     @property
     def path(self) -> str:
@@ -44,8 +36,12 @@ class BasicConfig():
         return self.__datas
 
     @property
-    def administrators(self) -> List[str]:
-        return self.datas[self.ADMIN_SECTION]
+    def secret_key(self) -> str:
+        return self.datas["secret"]
+
+    @property
+    def lifetime(self) -> int:
+        return self.datas.get("lifetime", 0)
 
     @classmethod
     def loadf(cls, path: str = DEFAULT_CONFIG_FILE) -> "BasicConfig":

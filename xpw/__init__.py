@@ -1,5 +1,7 @@
 # coding:utf-8
 
+from xpw.account import Account  # noqa:F401
+from xpw.account import Profile  # noqa:F401
 from xpw.authorize import AuthInit  # noqa:F401
 from xpw.authorize import TokenAuth  # noqa:F401
 from xpw.configure import Argon2Config  # noqa:F401
@@ -12,3 +14,4 @@ from xpw.password import Salt  # noqa:F401
 from xpw.password import Secret  # noqa:F401
 from xpw.session import SessionID  # noqa:F401
 from xpw.session import SessionKeys  # noqa:F401
+from xpw.session import SessionUser  # noqa:F401
