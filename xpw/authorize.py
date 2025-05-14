@@ -30,9 +30,11 @@ class TokenAuth():
         if code in (tokens := self.tokens):
             del tokens[code]
         assert code not in self.tokens
+        self.config.dumpf()
 
     def update_token(self, code: str, user: str = "") -> None:
         self.tokens[code] = user
+        self.config.dumpf()
 
     def generate_token(self, user: str = "") -> str:
         from xpw.password import Pass  # pylint:disable=import-outside-toplevel

@@ -36,7 +36,8 @@ class TestAuthInit(unittest.TestCase):
         pass
 
     def test_verify(self):
-        with mock.patch.object(authorize.BasicConfig, "loadf") as mock_loadf:
+        with mock.patch.object(authorize.BasicConfig, "loadf") as mock_loadf, \
+                mock.patch.object(authorize.BasicConfig, "dumpf"):
             mock_loadf.side_effect = [authorize.BasicConfig(self.path, self.datas)]  # noqa:E501
             auth = authorize.AuthInit.from_file()
             token = auth.generate_token()
@@ -52,7 +53,8 @@ class TestAuthInit(unittest.TestCase):
 
     @mock.patch.object(authorize.LdapConfig, "client")
     def test_ldap_verify(self, mock_client):
-        with mock.patch.object(authorize.BasicConfig, "loadf") as mock_loadf:
+        with mock.patch.object(authorize.BasicConfig, "loadf") as mock_loadf, \
+                mock.patch.object(authorize.BasicConfig, "dumpf"):
             mock_loadf.side_effect = [authorize.BasicConfig(self.path, self.ldap_datas)]  # noqa:E501
             auth = authorize.AuthInit.from_file()
             token = auth.generate_token()
