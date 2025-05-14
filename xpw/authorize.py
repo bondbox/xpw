@@ -35,15 +35,12 @@ class TokenAuth():
         assert code not in self.tokens
         self.config.dumpf()
 
-    def update_token(self, code: str, user: str = "") -> None:
-        self.tokens[code] = user
-        self.config.dumpf()
-
     def generate_token(self, user: str = "") -> str:
         from xpw.password import Pass  # pylint:disable=import-outside-toplevel
 
         secret: Pass = Pass.random_generate(64, Pass.CharacterSet.ALPHANUMERIC)
-        self.update_token(code := secret.value, user)
+        self.tokens.setdefault(code := secret.value, user)
+        self.config.dumpf()
         return code
 
     def verify_password(self, username: str, password: Optional[str] = None) -> Optional[str]:  # noqa:E501
