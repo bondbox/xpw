@@ -44,7 +44,33 @@ class SessionID():
         return Pass.random_generate(32, "0123456789abcdef").value
 
 
-class SessionKeys(ItemPool[str, Optional[str]]):
+class SessionUser():
+    def __init__(self, session_id: str, secret_key: str, identity: str = ""):  # noqa:E501
+        self.__session_id: str = session_id
+        self.__secret_key: str = secret_key
+        self.__identity: str = identity
+
+    @property
+    def session_id(self) -> str:
+        return self.__session_id
+
+    @property
+    def secret_key(self) -> str:
+        return self.__secret_key
+
+    @property
+    def identity(self) -> str:
+        return self.__identity
+
+    def update(self, secret_key: str, identity: str = "") -> None:
+        self.__secret_key = secret_key
+        self.__identity = identity
+
+    def verify(self, session_id: str, secret_key: str) -> bool:
+        return self.session_id == session_id and self.secret_key == secret_key
+
+
+class SessionKeys(ItemPool[str, SessionUser]):
     """Session Secret Pool"""
 
     def __init__(self, secret_key: Optional[str] = None, lifetime: TimeUnit = 3600.0):  # noqa:E501
@@ -55,25 +81,30 @@ class SessionKeys(ItemPool[str, Optional[str]]):
     def secret(self) -> Secret:
         return self.__secret
 
-    def search(self, s: Optional[str] = None) -> CacheItem[str, Optional[str]]:  # noqa:E501
+    def search(self, s: Optional[str] = None) -> CacheItem[str, SessionUser]:
         session_id: str = s or SessionID.generate()
         if session_id not in self:
-            self.put(session_id, None)
+            self.put(session_id, SessionUser(session_id, self.secret.key))
         return self.get(session_id)
 
-    def verify(self, session_id: str, secret_key: Optional[str] = None) -> bool:  # noqa:E501
+    def lookup(self, session_id: str, secret_key: Optional[str] = None) -> Optional[str]:  # noqa:E501
         try:
-            token: str = secret_key or self.secret.key
-            if (session := self[session_id]).data == token:
-                session.renew()
-                return True
-            return False
+            item: CacheItem[str, SessionUser] = self[session_id]
+            user: SessionUser = item.data
+            if user.verify(session_id, secret_key or self.secret.key):
+                item.renew()
+                return user.identity
+            return None
         except (CacheExpired, CacheMiss):
-            return False
+            return None
 
-    def sign_in(self, session_id: str, secret_key: Optional[str] = None) -> str:  # noqa:E501
-        self.search(session_id).update(token := secret_key or self.secret.key)
-        return token
+    def verify(self, session_id: str, secret_key: Optional[str] = None) -> bool:  # noqa:E501
+        return (user := self.lookup(session_id, secret_key)) is not None and isinstance(user, str)  # noqa:E501
+
+    def sign_in(self, session_id: str, secret_key: Optional[str] = None, identity: str = "") -> str:  # noqa:E501
+        user: SessionUser = self.search(session_id).data
+        user.update(secret_key or self.secret.key, identity)
+        return user.secret_key
 
     def sign_out(self, session_id: str) -> None:
         self.delete(session_id)
