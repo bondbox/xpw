@@ -7,6 +7,35 @@ from unittest.mock import MagicMock
 from xpw import authorize
 
 
+class TestToken(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.token: authorize.Token = authorize.Token.create()
+
+    @classmethod
+    def tearDownClass(cls):
+        pass
+
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_check_property(self):
+        info: str = f"Token({self.token.name}, {self.token.user}, {self.token.note})"  # noqa:E501
+        self.assertEqual(str(self.token), info)
+        self.assertEqual(self.token.note, "")
+        self.assertEqual(self.token.user, "")
+
+    def test_renew(self):
+        self.assertIsNot(new_token := self.token.renew(), self.token)
+        self.assertNotEqual(self.token.hash, new_token.hash)
+        self.assertEqual(self.token.name, new_token.name)
+        self.assertEqual(self.token.note, new_token.note)
+        self.assertEqual(self.token.user, new_token.user)
+
+
 class TestAuthInit(unittest.TestCase):
 
     @classmethod

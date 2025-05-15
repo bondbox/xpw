@@ -150,10 +150,11 @@ class Account():
             self.tickets.sign_out(session_id)
         return True
 
-    def generate(self, session_id: str, secret_key: Optional[str] = None) -> Optional[str]:  # noqa:E501
+    def generate(self, session_id: str, secret_key: Optional[str] = None, note: str = "") -> Optional[str]:  # noqa:E501
         """generate random token for authenticated user"""
-        identity: Optional[str] = self.tickets.lookup(session_id, secret_key)
-        return self.members.generate_token(identity) if identity is not None else None  # noqa:E501
+        if (identity := self.tickets.lookup(session_id, secret_key)) is not None:  # noqa:E501
+            return self.members.generate_token(note=note, user=identity)
+        return None
 
     def register(self, username: str, password: str) -> Optional[Profile]:
         if not self.allow_register:
@@ -175,8 +176,7 @@ class Account():
         # step 1: force verify username/password and logout accout
         if self.members.verify_password(username, password) == username and self.logout(username):  # noqa:E501
             # step 2: delete all tokens associated with the user
-            tokens: List[str] = [i[0] for i in self.members.tokens.items() if i[1] == username]  # noqa:E501
-            for token in tokens:
+            for token in [t.hash for t in self.members.tokens.values() if t.user == username]:  # noqa:E501
                 self.members.delete_token(token)
             # step 3: delete the user account
             return self.members.delete_user(username, password)
