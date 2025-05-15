@@ -79,8 +79,7 @@ class TokenAuth():
     def delete_token(self, name: str) -> None:
         tokens: Dict[str, Tuple[str, str, str]] = self.config.datas[self.SECTION]  # noqa:E501
         if token := tokens.get(name):
-            del self.tokens[hash := token[1]]  # pylint:disable=W0622
-            assert hash not in self.tokens
+            del self.tokens[token[1]]
             del tokens[name]
             self.config.dumpf()
         assert name not in self.config.datas[self.SECTION]
