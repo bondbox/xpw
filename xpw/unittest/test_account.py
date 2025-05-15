@@ -44,15 +44,30 @@ class TestAccount(unittest.TestCase):
         self.assertFalse(self.account.allow_admin_delete_user)
 
     def test_fetch(self):
-        self.assertIsNone(self.account.fetch(None))
         self.assertIsNone(self.account.fetch(""))
-        self.assertIsInstance(profile := self.account.fetch(self.username), account.Profile)  # noqa:E501
+        self.assertIsNone(self.account.fetch(self.username))
+        self.assertIsInstance(user := self.account.login(self.username, self.password), account.SessionUser)  # noqa:E501
+        assert isinstance(user, account.SessionUser)
+        self.assertIsInstance(profile := self.account.fetch(user.session_id), account.Profile)  # noqa:E501
         assert isinstance(profile, account.Profile)
         self.assertEqual(profile.workspace, account.join(self.account.catalog, self.username))  # noqa:E501
         self.assertEqual(profile.catalog, self.account.catalog)
         self.assertEqual(profile.identity, self.username)
         self.assertEqual(profile.username, self.username)
         self.assertFalse(profile.administrator)
+        self.assertIsInstance(token1 := profile.generate("test"), account.UserToken)  # noqa:E501
+        self.assertIsInstance(token2 := profile.generate("test"), account.UserToken)  # noqa:E501
+        for token in profile.tokens:
+            self.assertIsInstance(token, account.Profile.Token)
+            self.assertEqual(token.note, "test")
+        for session in profile.sessions:
+            self.assertIsInstance(session, account.Profile.Session)
+        self.assertIsInstance(self.account.update(user.session_id, user.secret_key, token2.name), account.UserToken)  # noqa:E501
+        self.assertTrue(self.account.delete(user.session_id, user.secret_key, token1.name))  # noqa:E501
+        self.assertTrue(self.account.delete(user.session_id, user.secret_key, token2.name))  # noqa:E501
+        self.assertTrue(self.account.logout(user.session_id, user.secret_key))
+        self.assertIsNone(self.account.fetch(user.session_id, user.secret_key))
+        self.assertIsNone(self.account.fetch(user.session_id))
 
     def test_login_and_logout(self):
         self.assertIsNone(self.account.login(self.username, "test"))
@@ -68,7 +83,9 @@ class TestAccount(unittest.TestCase):
         self.assertNotEqual(user1.session_id, user2.session_id)
         self.assertTrue(self.account.check(user2.session_id, user2.secret_key))
         self.assertTrue(self.account.check(user2.session_id))
-        self.assertTrue(self.account.logout(self.username))
+        self.assertFalse(self.account.logout(
+            user2.session_id, "abc1234567890"))
+        self.assertTrue(self.account.logout(user2.session_id, user2.secret_key))  # noqa:E501
         self.assertFalse(self.account.check(user2.session_id, user2.secret_key))  # noqa:E501
         self.assertFalse(self.account.check(user2.session_id))
         self.assertFalse(self.account.check(user2.session_id, user2.secret_key))  # noqa:E501
@@ -77,12 +94,12 @@ class TestAccount(unittest.TestCase):
     def test_generate(self):
         self.assertIsInstance(user := self.account.login(self.username, self.password), account.SessionUser)  # noqa:E501
         assert isinstance(user, account.SessionUser)
-        self.assertIsInstance(token1 := self.account.generate(user.session_id, user.secret_key), str)  # noqa:E501
-        self.assertIsInstance(token2 := self.account.generate(user.session_id, user.secret_key), str)  # noqa:E501
+        self.assertIsInstance(token1 := self.account.generate(user.session_id, user.secret_key), account.UserToken)  # noqa:E501
+        self.assertIsInstance(token2 := self.account.generate(user.session_id, user.secret_key), account.UserToken)  # noqa:E501
         self.assertIsNone(self.account.generate(user.session_id, "abc123456789"))  # noqa:E501
         self.assertIsNone(self.account.generate(self.username, self.password))
         self.assertNotEqual(token1, token2)
-        self.assertTrue(self.account.logout(self.username))
+        self.assertTrue(self.account.logout(user.session_id))
         self.assertIsNone(self.account.generate(user.session_id, user.secret_key))  # noqa:E501
 
     def test_register(self):
@@ -118,12 +135,12 @@ class TestAccount(unittest.TestCase):
         self.assertFalse(self.account.terminate(self.username, "password"))
         self.assertIsInstance(user := self.account.login(self.username, self.password, "1"), account.SessionUser)  # noqa:E501
         assert isinstance(user, account.SessionUser)
-        self.assertIsInstance(token1 := self.account.generate(user.session_id, user.secret_key), str)  # noqa:E501
-        self.assertIsInstance(token2 := self.account.generate(user.session_id, user.secret_key), str)  # noqa:E501
+        self.assertIsInstance(token1 := self.account.generate(user.session_id, user.secret_key), account.UserToken)  # noqa:E501
+        self.assertIsInstance(token2 := self.account.generate(user.session_id, user.secret_key), account.UserToken)  # noqa:E501
         self.assertIsNone(self.account.generate(self.username, "password"))
-        assert isinstance(token1, str) and isinstance(token2, str)
-        self.assertIsInstance(self.account.login("", token1, "2"), account.SessionUser)  # noqa:E501
-        self.assertIsInstance(self.account.login("", token2, "3"), account.SessionUser)  # noqa:E501
+        assert isinstance(token1, account.UserToken) and isinstance(token2, account.UserToken)  # noqa:E501
+        self.assertIsInstance(self.account.login("", token1.hash, "2"), account.SessionUser)  # noqa:E501
+        self.assertIsInstance(self.account.login("", token2.hash, "3"), account.SessionUser)  # noqa:E501
         self.assertTrue(self.account.check("1"))
         self.assertTrue(self.account.check("2"))
         self.assertTrue(self.account.check("3"))

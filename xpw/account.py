@@ -8,12 +8,14 @@ from os.path import isdir
 from os.path import join
 from typing import Any
 from typing import Dict
+from typing import Iterator
 from typing import List
 from typing import Optional
 
 from xkits_lib.unit import TimeUnit
 
 from xpw.authorize import AuthInit
+from xpw.authorize import Token as UserToken
 from xpw.authorize import TokenAuth
 from xpw.configure import DEFAULT_CONFIG_FILE
 from xpw.session import SessionKeys
@@ -21,36 +23,94 @@ from xpw.session import SessionUser
 
 
 class Profile():
-    def __init__(self, user: str, base: str, root: bool = False):
-        workspace: str = join(base, user)
-        self.__administrator: bool = root
-        self.__workspace: str = workspace
-        self.__identity: str = user
-        self.__username: str = user
-        self.__catalog: str = base
+    class Token():
+        def __init__(self, token: UserToken):
+            self.__token: UserToken = token
+
+        @property
+        def name(self) -> str:
+            return self.__token.name
+
+        @property
+        def note(self) -> str:
+            return self.__token.note
+
+    class Session():  # pylint:disable=too-few-public-methods
+        def __init__(self, session: SessionUser):
+            self.__session: SessionUser = session
+
+        @property
+        def session_id(self) -> str:
+            return self.__session.session_id
+
+    def __init__(self, accounts: "Account", username: str):  # noqa:E501
+        self.__accounts: Account = accounts  # private
+        self.__username: str = username
 
     @property
-    def administrator(self) -> bool:
-        return self.__administrator
-
-    @property
-    def workspace(self) -> str:
-        return self.__workspace
-
-    @property
-    def identity(self) -> str:
-        return self.__identity
+    def catalog(self) -> str:
+        return self.__accounts.catalog
 
     @property
     def username(self) -> str:
         return self.__username
 
     @property
-    def catalog(self) -> str:
-        return self.__catalog
+    def identity(self) -> str:
+        return self.username
+
+    @property
+    def workspace(self) -> str:
+        return join(self.catalog, self.username)
+
+    @property
+    def administrator(self) -> bool:
+        return self.username in self.__accounts.administrators
+
+    @property
+    def tokens(self) -> Iterator[Token]:
+        for token in self.__accounts.members.tokens.values():
+            if token.user == self.username:
+                yield self.Token(token)
+
+    @property
+    def sessions(self) -> Iterator[Session]:
+        for session_id in self.__accounts.tickets:
+            yield self.Session(self.__accounts.tickets[session_id].data)
+
+    def logout(self) -> bool:
+        for session_id in [session.session_id for session in self.sessions]:
+            self.__accounts.tickets.sign_out(session_id)
+        return not any(self.sessions)
+
+    def update(self, token: str) -> Optional[UserToken]:
+        found: bool = False
+        for item in self.tokens:
+            if item.name == token:
+                found = True
+                break
+        return self.__accounts.members.update_token(name=token) if found else None  # noqa:E501
+
+    def delete(self, token: str) -> bool:
+        found: bool = False
+        for item in self.tokens:
+            if item.name == token:
+                found = True
+                break
+
+        if found:
+            self.__accounts.members.delete_token(name=token)
+
+        for item in self.tokens:
+            if item.name == token:
+                return False  # pragma: no cover
+        return True
+
+    def generate(self, note: str = "") -> UserToken:
+        return self.__accounts.members.generate_token(note=note, user=self.identity)  # noqa:E501
 
 
-class Account():
+class Account():  # pylint:disable=too-many-public-methods
     ACCOUNT_SECTION = "account"
     ADMIN_SECTION = "admin"
 
@@ -120,11 +180,9 @@ class Account():
     def allow_admin_delete_user(self) -> bool:
         return bool(self.admin_options.get("delete_user"))
 
-    def fetch(self, username: Optional[str]) -> Optional[Profile]:
-        if username:
-            root: bool = username in self.administrators
-            return Profile(username, self.catalog, root)
-        return None
+    def fetch(self, session_id: str, secret_key: Optional[str] = None) -> Optional[Profile]:  # noqa:E501
+        """generate profile for authenticated user"""
+        return Profile(self, identity) if (identity := self.tickets.lookup(session_id, secret_key)) is not None else None  # noqa:E501
 
     def check(self, session_id: str, secret_key: Optional[str] = None) -> bool:
         return self.tickets.verify(session_id, secret_key)
@@ -144,17 +202,20 @@ class Account():
         self.tickets.sign_in(user.session_id, secret_key, username)
         return user
 
-    def logout(self, username: str) -> bool:
-        sessions = [i for i in self.tickets if self.tickets[i].data.identity == username]  # noqa:E501
-        for session_id in sessions:
-            self.tickets.sign_out(session_id)
-        return True
+    def logout(self, session_id: str, secret_key: Optional[str] = None) -> bool:  # noqa:E501
+        return profile.logout() if (profile := self.fetch(session_id, secret_key)) else False  # noqa:E501
 
-    def generate(self, session_id: str, secret_key: Optional[str] = None, note: str = "") -> Optional[str]:  # noqa:E501
+    def update(self, session_id: str, secret_key: Optional[str] = None, token: str = "") -> Optional[UserToken]:  # noqa:E501
+        """update token for authenticated user"""
+        return profile.update(token) if (profile := self.fetch(session_id, secret_key)) else None  # noqa:E501
+
+    def delete(self, session_id: str, secret_key: Optional[str] = None, token: str = "") -> bool:  # noqa:E501
+        """delete token for authenticated user"""
+        return profile.delete(token) if (profile := self.fetch(session_id, secret_key)) else False  # noqa:E501
+
+    def generate(self, session_id: str, secret_key: Optional[str] = None, note: str = "") -> Optional[UserToken]:  # noqa:E501
         """generate random token for authenticated user"""
-        if (identity := self.tickets.lookup(session_id, secret_key)) is not None:  # noqa:E501
-            return self.members.generate_token(note=note, user=identity)
-        return None
+        return profile.generate(note) if (profile := self.fetch(session_id, secret_key)) else None  # noqa:E501
 
     def register(self, username: str, password: str) -> Optional[Profile]:
         if not self.allow_register:
@@ -164,7 +225,7 @@ class Account():
         if self.first_user_is_admin and user and len(self.administrators) == 0:
             self.administrators.append(user)
             self.members.config.dumpf()
-        return self.fetch(user)
+        return Profile(self, user) if user else None
 
     def terminate(self, username: str, password: str) -> bool:
         if not self.allow_terminate:
@@ -174,10 +235,10 @@ class Account():
             raise PermissionError(f"administrator '{username}' cannot be terminated")  # noqa:E501
 
         # step 1: force verify username/password and logout accout
-        if self.members.verify_password(username, password) == username and self.logout(username):  # noqa:E501
+        if self.members.verify_password(username, password) == username and (profile := Profile(self, username)).logout():  # noqa:E501
             # step 2: delete all tokens associated with the user
-            for token in [t.hash for t in self.members.tokens.values() if t.user == username]:  # noqa:E501
-                self.members.delete_token(token)
+            for name in [token.name for token in profile.tokens]:  # noqa:E501
+                self.members.delete_token(name)
             # step 3: delete the user account
             return self.members.delete_user(username, password)
         return False

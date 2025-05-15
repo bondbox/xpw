@@ -39,6 +39,7 @@ class Token():
         return self.__user
 
     def dump(self) -> Tuple[str, str, str]:
+        """tuple(note, hash, user)"""
         return (self.note, self.hash, self.user)
 
     def renew(self) -> "Token":
@@ -75,32 +76,37 @@ class TokenAuth():
     def tokens(self) -> Dict[str, Token]:
         return self.__tokens
 
+    def delete_token(self, name: str) -> None:
+        tokens: Dict[str, Tuple[str, str, str]] = self.config.datas[self.SECTION]  # noqa:E501
+        if token := tokens.get(name):
+            del self.tokens[hash := token[1]]  # pylint:disable=W0622
+            assert hash not in self.tokens
+            del tokens[name]
+            self.config.dumpf()
+        assert name not in self.config.datas[self.SECTION]
+
+    def update_token(self, name: str) -> Optional[Token]:
+        tokens: Dict[str, Tuple[str, str, str]] = self.config.datas[self.SECTION]  # noqa:E501
+        if token := tokens.get(name):
+            old: Token = self.tokens[token[1]]
+            new: Token = old.renew()
+            assert new.name == name
+            del self.tokens[old.hash]
+            self.tokens.setdefault(new.hash, new)
+            tokens[name] = new.dump()
+            self.config.dumpf()
+            return new
+        return None
+
     def verify_token(self, hash: str) -> Optional[str]:  # pylint:disable=W0622
         return token.user if (token := self.tokens.get(hash)) else None
 
-    def delete_token(self, hash: str) -> None:  # pylint:disable=W0622
-        if token := self.tokens.get(hash):
-            del self.config.datas[self.SECTION][token.name]
-            del self.tokens[hash]
-            self.config.dumpf()
-        assert hash not in self.tokens
-
-    def update_token(self, hash: str) -> Optional[str]:  # pylint:disable=W0622
-        if token := self.tokens.get(hash):
-            tokens: Dict[str, Tuple[str, str, str]] = self.config.datas[self.SECTION]  # noqa:E501
-            tokens[token.name] = (new := token.renew()).dump()
-            del self.tokens[token.hash]  # delete old token
-            self.tokens.setdefault(new.hash, new)
-            self.config.dumpf()
-            return new.hash
-        return None
-
-    def generate_token(self, note: str = "", user: str = "") -> str:
+    def generate_token(self, note: str = "", user: str = "") -> Token:
         tokens: Dict[str, Tuple[str, str, str]] = self.config.datas[self.SECTION]  # noqa:E501
         tokens.setdefault((token := Token.create(note, user)).name, token.dump())  # noqa:E501
         self.tokens.setdefault(token.hash, token)
         self.config.dumpf()
-        return token.hash
+        return token
 
     def verify_password(self, username: str, password: Optional[str] = None) -> Optional[str]:  # noqa:E501
         raise NotImplementedError()
