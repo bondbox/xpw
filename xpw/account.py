@@ -172,8 +172,8 @@ class Account():
         if len(self.administrators) <= 1 and username in self.administrators:
             raise PermissionError(f"administrator '{username}' cannot be terminated")  # noqa:E501
 
-        # step 1: verify username/password and logout accout
-        if self.members.verify(username, password) == username and self.logout(username):  # noqa:E501
+        # step 1: force verify username/password and logout accout
+        if self.members.verify_password(username, password) == username and self.logout(username):  # noqa:E501
             # step 2: delete all tokens associated with the user
             tokens: List[str] = [i[0] for i in self.members.tokens.items() if i[1] == username]  # noqa:E501
             for token in tokens:
