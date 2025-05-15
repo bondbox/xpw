@@ -170,7 +170,7 @@ class Account():  # pylint:disable=too-many-public-methods
 
     @property
     def first_user_is_admin(self) -> bool:
-        return bool(self.admin_options.get("first_user"))
+        return bool(self.admin_options.get("first_auto"))
 
     @property
     def allow_admin_create_user(self) -> bool:

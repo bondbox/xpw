@@ -124,7 +124,7 @@ class TestAccount(unittest.TestCase):
     def test_terminate(self):
         self.assertRaises(PermissionError, self.account.terminate, self.username, self.password)  # noqa:E501
         self.account.members.config.datas[account.Account.ACCOUNT_SECTION] = {"register": True, "terminate": True}  # noqa:E501
-        self.account.members.config.datas[account.Account.ADMIN_SECTION] = {"user": [], "first_user": True}  # noqa:E501
+        self.account.members.config.datas[account.Account.ADMIN_SECTION] = {"user": [], "first_auto": True}  # noqa:E501
         self.assertEqual(self.account.administrators, [])
         self.assertTrue(self.account.first_user_is_admin)
         self.assertTrue(self.account.allow_terminate)
