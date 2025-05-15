@@ -15,8 +15,8 @@ from typing import Optional
 from xkits_lib.unit import TimeUnit
 
 from xpw.authorize import AuthInit
-from xpw.authorize import Token as UserToken
 from xpw.authorize import TokenAuth
+from xpw.authorize import UserToken
 from xpw.configure import DEFAULT_CONFIG_FILE
 from xpw.session import SessionKeys
 from xpw.session import SessionUser

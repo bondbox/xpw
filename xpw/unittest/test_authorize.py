@@ -9,7 +9,7 @@ from xpw import authorize
 class TestToken(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.token: authorize.Token = authorize.Token.create()
+        cls.token: authorize.UserToken = authorize.UserToken.create()
 
     @classmethod
     def tearDownClass(cls):
@@ -22,7 +22,7 @@ class TestToken(unittest.TestCase):
         pass
 
     def test_check_property(self):
-        info: str = f"Token({self.token.name}, {self.token.user}, {self.token.note})"  # noqa:E501
+        info: str = f"UserToken({self.token.name}, {self.token.user}, {self.token.note})"  # noqa:E501
         self.assertEqual(str(self.token), info)
         self.assertEqual(self.token.note, "")
         self.assertEqual(self.token.user, "")
@@ -69,11 +69,11 @@ class TestAuthInit(unittest.TestCase):
             mock_loadf.side_effect = [authorize.BasicConfig(self.path, self.datas)]  # noqa:E501
             auth = authorize.AuthInit.from_file()
             token1 = auth.generate_token()
-            self.assertIsInstance(token2 := auth.update_token(token1.name), authorize.Token)  # noqa:E501
-            self.assertIsInstance(token3 := auth.update_token(token1.name), authorize.Token)  # noqa:E501
+            self.assertIsInstance(token2 := auth.update_token(token1.name), authorize.UserToken)  # noqa:E501
+            self.assertIsInstance(token3 := auth.update_token(token1.name), authorize.UserToken)  # noqa:E501
             self.assertIsNone(auth.update_token("test_token"))
-            assert isinstance(token2, authorize.Token)
-            assert isinstance(token3, authorize.Token)
+            assert isinstance(token2, authorize.UserToken)
+            assert isinstance(token3, authorize.UserToken)
             self.assertIsNone(auth.verify("", "test"))
             self.assertIsNone(auth.verify("test", "unit"))
             self.assertIsNone(auth.verify("demo", "test"))
@@ -96,11 +96,11 @@ class TestAuthInit(unittest.TestCase):
             mock_loadf.side_effect = [authorize.BasicConfig(self.path, self.ldap_datas)]  # noqa:E501
             auth = authorize.AuthInit.from_file()
             token1 = auth.generate_token()
-            self.assertIsInstance(token2 := auth.update_token(token1.name), authorize.Token)  # noqa:E501
-            self.assertIsInstance(token3 := auth.update_token(token1.name), authorize.Token)  # noqa:E501
+            self.assertIsInstance(token2 := auth.update_token(token1.name), authorize.UserToken)  # noqa:E501
+            self.assertIsInstance(token3 := auth.update_token(token1.name), authorize.UserToken)  # noqa:E501
             self.assertIsNone(auth.update_token("test_token"))
-            assert isinstance(token2, authorize.Token)
-            assert isinstance(token3, authorize.Token)
+            assert isinstance(token2, authorize.UserToken)
+            assert isinstance(token3, authorize.UserToken)
             mock_client.signed.side_effect = [None, Exception(), mock.MagicMock(entry_dn="demo")]  # noqa:E501
             self.assertIsNone(auth.verify("", "test"))
             self.assertIsNone(auth.verify("test", "unit"))

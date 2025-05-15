@@ -4,6 +4,7 @@ from xpw.account import Account  # noqa:F401
 from xpw.account import Profile  # noqa:F401
 from xpw.authorize import AuthInit  # noqa:F401
 from xpw.authorize import TokenAuth  # noqa:F401
+from xpw.authorize import UserToken  # noqa:F401
 from xpw.configure import Argon2Config  # noqa:F401
 from xpw.configure import DEFAULT_CONFIG_FILE  # noqa:F401
 from xpw.ldapauth import LdapClient  # noqa:F401

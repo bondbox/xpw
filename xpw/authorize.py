@@ -11,7 +11,7 @@ from xpw.configure import LdapConfig
 from xpw.password import Argon2Hasher
 
 
-class Token():
+class UserToken():
     def __init__(self, name: str, note: str, hash: str, user: str):  # noqa:E501, pylint:disable=redefined-builtin
         assert isinstance(name, str) and len(name) > 0
         self.__name: str = name
@@ -42,11 +42,11 @@ class Token():
         """tuple(note, hash, user)"""
         return (self.note, self.hash, self.user)
 
-    def renew(self) -> "Token":
-        return Token(name=self.name, note=self.note, hash=self.generate(), user=self.user)  # noqa:E501
+    def renew(self) -> "UserToken":
+        return UserToken(name=self.name, note=self.note, hash=self.generate(), user=self.user)  # noqa:E501
 
     @classmethod
-    def create(cls, note: str = "", user: str = "") -> "Token":
+    def create(cls, note: str = "", user: str = "") -> "UserToken":
         from uuid import uuid4  # pylint:disable=import-outside-toplevel
 
         return cls(name=str(uuid4()), note=note, hash=cls.generate(), user=user)  # noqa:E501
@@ -65,7 +65,7 @@ class TokenAuth():
         config.datas.setdefault(self.SECTION, {})
         tokens: Dict[str, Tuple[str, str, str]] = config.datas[self.SECTION]
         assert isinstance(tokens, dict), f"unexpected type: '{type(tokens)}'"
-        self.__tokens: Dict[str, Token] = {v[1]: Token(k, *v) for k, v in tokens.items()}  # noqa:E501
+        self.__tokens: Dict[str, UserToken] = {v[1]: UserToken(k, *v) for k, v in tokens.items()}  # noqa:E501
         self.__config: BasicConfig = config
 
     @property
@@ -73,7 +73,7 @@ class TokenAuth():
         return self.__config
 
     @property
-    def tokens(self) -> Dict[str, Token]:
+    def tokens(self) -> Dict[str, UserToken]:
         return self.__tokens
 
     def delete_token(self, name: str) -> None:
@@ -85,11 +85,11 @@ class TokenAuth():
             self.config.dumpf()
         assert name not in self.config.datas[self.SECTION]
 
-    def update_token(self, name: str) -> Optional[Token]:
+    def update_token(self, name: str) -> Optional[UserToken]:
         tokens: Dict[str, Tuple[str, str, str]] = self.config.datas[self.SECTION]  # noqa:E501
         if token := tokens.get(name):
-            old: Token = self.tokens[token[1]]
-            new: Token = old.renew()
+            old: UserToken = self.tokens[token[1]]
+            new: UserToken = old.renew()
             assert new.name == name
             del self.tokens[old.hash]
             self.tokens.setdefault(new.hash, new)
@@ -101,9 +101,9 @@ class TokenAuth():
     def verify_token(self, hash: str) -> Optional[str]:  # pylint:disable=W0622
         return token.user if (token := self.tokens.get(hash)) else None
 
-    def generate_token(self, note: str = "", user: str = "") -> Token:
+    def generate_token(self, note: str = "", user: str = "") -> UserToken:
         tokens: Dict[str, Tuple[str, str, str]] = self.config.datas[self.SECTION]  # noqa:E501
-        tokens.setdefault((token := Token.create(note, user)).name, token.dump())  # noqa:E501
+        tokens.setdefault((token := UserToken.create(note, user)).name, token.dump())  # noqa:E501
         self.tokens.setdefault(token.hash, token)
         self.config.dumpf()
         return token
