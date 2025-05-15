@@ -83,7 +83,10 @@ class Profile():
             self.__accounts.tickets.sign_out(session_id)
         return not any(self.sessions)
 
-    def update(self, token: str) -> Optional[UserToken]:
+    def create_token(self, note: str = "") -> UserToken:
+        return self.__accounts.members.generate_token(note=note, user=self.identity)  # noqa:E501
+
+    def update_token(self, token: str) -> Optional[UserToken]:
         found: bool = False
         for item in self.tokens:
             if item.name == token:
@@ -91,7 +94,7 @@ class Profile():
                 break
         return self.__accounts.members.update_token(name=token) if found else None  # noqa:E501
 
-    def delete(self, token: str) -> bool:
+    def delete_token(self, token: str) -> bool:
         found: bool = False
         for item in self.tokens:
             if item.name == token:
@@ -105,9 +108,6 @@ class Profile():
             if item.name == token:
                 return False  # pragma: no cover
         return True
-
-    def generate(self, note: str = "") -> UserToken:
-        return self.__accounts.members.generate_token(note=note, user=self.identity)  # noqa:E501
 
 
 class Account():  # pylint:disable=too-many-public-methods
@@ -205,18 +205,6 @@ class Account():  # pylint:disable=too-many-public-methods
     def logout(self, session_id: str, secret_key: Optional[str] = None) -> bool:  # noqa:E501
         return profile.logout() if (profile := self.fetch(session_id, secret_key)) else False  # noqa:E501
 
-    def update(self, session_id: str, secret_key: Optional[str] = None, token: str = "") -> Optional[UserToken]:  # noqa:E501
-        """update token for authenticated user"""
-        return profile.update(token) if (profile := self.fetch(session_id, secret_key)) else None  # noqa:E501
-
-    def delete(self, session_id: str, secret_key: Optional[str] = None, token: str = "") -> bool:  # noqa:E501
-        """delete token for authenticated user"""
-        return profile.delete(token) if (profile := self.fetch(session_id, secret_key)) else False  # noqa:E501
-
-    def generate(self, session_id: str, secret_key: Optional[str] = None, note: str = "") -> Optional[UserToken]:  # noqa:E501
-        """generate random token for authenticated user"""
-        return profile.generate(note) if (profile := self.fetch(session_id, secret_key)) else None  # noqa:E501
-
     def register(self, username: str, password: str) -> Optional[Profile]:
         if not self.allow_register:
             raise PermissionError("register new account is disabled")
@@ -242,6 +230,18 @@ class Account():  # pylint:disable=too-many-public-methods
             # step 3: delete the user account
             return self.members.delete_user(username, password)
         return False
+
+    def create_token(self, session_id: str, secret_key: Optional[str] = None, note: str = "") -> Optional[UserToken]:  # noqa:E501
+        """generate random token for authenticated user"""
+        return profile.create_token(note) if (profile := self.fetch(session_id, secret_key)) else None  # noqa:E501
+
+    def update_token(self, session_id: str, secret_key: Optional[str] = None, token: str = "") -> Optional[UserToken]:  # noqa:E501
+        """update token for authenticated user"""
+        return profile.update_token(token) if (profile := self.fetch(session_id, secret_key)) else None  # noqa:E501
+
+    def delete_token(self, session_id: str, secret_key: Optional[str] = None, token: str = "") -> bool:  # noqa:E501
+        """delete token for authenticated user"""
+        return profile.delete_token(token) if (profile := self.fetch(session_id, secret_key)) else False  # noqa:E501
 
     @classmethod
     def from_file(cls, config: str = DEFAULT_CONFIG_FILE,
