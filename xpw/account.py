@@ -209,6 +209,12 @@ class Account():  # pylint:disable=too-many-public-methods
         if not self.allow_register:
             raise PermissionError("register new account is disabled")
 
+        import string  # pylint:disable=import-outside-toplevel
+
+        allowed_characters = string.ascii_letters + string.digits + "_"
+        if not username or any(c not in allowed_characters for c in username):
+            raise ValueError(f"register an illegal username: '{username}'")
+
         user: Optional[str] = self.members.create_user(username, password)
         if self.first_user_is_admin and user and len(self.administrators) == 0:
             self.administrators.append(user)

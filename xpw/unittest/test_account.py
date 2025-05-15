@@ -111,6 +111,8 @@ class TestAccount(unittest.TestCase):
         self.assertEqual(self.account.administrators, [])
         self.assertRaises(ValueError, self.account.register, self.username, self.password)  # noqa:E501
         self.assertIsInstance(profile := self.account.register("username", "password"), account.Profile)  # noqa:E501
+        self.assertRaises(ValueError, self.account.register, "user name", "password")  # noqa:E501
+        self.assertRaises(ValueError, self.account.register, "", "password")
         self.assertEqual(self.account.administrators, [])
         assert isinstance(profile, account.Profile)
         self.assertEqual(profile.workspace, account.join(self.account.catalog, "username"))  # noqa:E501
