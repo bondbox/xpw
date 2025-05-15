@@ -1,5 +1,7 @@
 # coding:utf-8
 
+from typing import Dict
+from typing import List
 from typing import Optional
 
 from xkits_lib.cache import CacheExpired
@@ -75,7 +77,12 @@ class SessionKeys(ItemPool[str, SessionUser]):
 
     def __init__(self, secret_key: Optional[str] = None, lifetime: TimeUnit = 3600.0):  # noqa:E501
         self.__secret: Secret = Secret(secret_key or Pass.random_generate(64).value)  # noqa:E501
+        self.__logged: Dict[str, List[SessionUser]] = {}
         super().__init__(lifetime=lifetime)
+
+    @property
+    def logged(self) -> Dict[str, List[SessionUser]]:
+        return self.__logged
 
     @property
     def secret(self) -> Secret:
@@ -104,7 +111,15 @@ class SessionKeys(ItemPool[str, SessionUser]):
     def sign_in(self, session_id: str, secret_key: Optional[str] = None, identity: str = "") -> str:  # noqa:E501
         user: SessionUser = self.search(session_id).data
         user.update(secret_key or self.secret.key, identity)
+        self.logged.setdefault(user.identity, []).append(user)
+        assert user in self.logged[user.identity]
         return user.secret_key
 
     def sign_out(self, session_id: str) -> None:
-        self.delete(session_id)
+        session: SessionUser = self.get(session_id).data
+        return self.quit(session.identity)
+
+    def quit(self, identity: str) -> None:
+        for session in self.logged[identity]:
+            self.delete(session.session_id)
+        del self.logged[identity]

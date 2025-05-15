@@ -75,16 +75,15 @@ class Profile():
 
     @property
     def sessions(self) -> Iterator[Session]:
-        for session_id in self.__accounts.tickets:
-            yield self.Session(self.__accounts.tickets[session_id].data)
+        for session in self.__accounts.tickets.logged.get(self.username, []):
+            yield self.Session(session)
 
     def logout(self) -> bool:
-        for session_id in [session.session_id for session in self.sessions]:
-            self.__accounts.tickets.sign_out(session_id)
+        self.__accounts.tickets.quit(self.username)
         return not any(self.sessions)
 
     def create_token(self, note: str = "") -> UserToken:
-        return self.__accounts.members.generate_token(note=note, user=self.identity)  # noqa:E501
+        return self.__accounts.members.generate_token(note=note, user=self.username)  # noqa:E501
 
     def update_token(self, token: str) -> Optional[UserToken]:
         found: bool = False
