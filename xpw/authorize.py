@@ -85,6 +85,16 @@ class TokenAuth():
             self.config.dumpf()
         assert hash not in self.tokens
 
+    def update_token(self, hash: str) -> Optional[str]:  # pylint:disable=W0622
+        if token := self.tokens.get(hash):
+            tokens: Dict[str, Tuple[str, str, str]] = self.config.datas[self.SECTION]  # noqa:E501
+            tokens[token.name] = (new := token.renew()).dump()
+            del self.tokens[token.hash]  # delete old token
+            self.tokens.setdefault(new.hash, new)
+            self.config.dumpf()
+            return new.hash
+        return None
+
     def generate_token(self, note: str = "", user: str = "") -> str:
         tokens: Dict[str, Tuple[str, str, str]] = self.config.datas[self.SECTION]  # noqa:E501
         tokens.setdefault((token := Token.create(note, user)).name, token.dump())  # noqa:E501

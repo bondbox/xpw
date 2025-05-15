@@ -2,7 +2,6 @@
 
 import unittest
 from unittest import mock
-from unittest.mock import MagicMock
 
 from xpw import authorize
 
@@ -69,16 +68,23 @@ class TestAuthInit(unittest.TestCase):
         with mock.patch.object(authorize.BasicConfig, "loadf") as mock_loadf:
             mock_loadf.side_effect = [authorize.BasicConfig(self.path, self.datas)]  # noqa:E501
             auth = authorize.AuthInit.from_file()
-            token = auth.generate_token()
+            token1 = auth.generate_token()
+            self.assertIsInstance(token2 := auth.update_token(token1), str)
+            self.assertIsNone(auth.update_token(token1))
+            assert isinstance(token2, str)
             self.assertIsNone(auth.verify("", "test"))
             self.assertIsNone(auth.verify("test", "unit"))
             self.assertIsNone(auth.verify("demo", "test"))
             self.assertEqual(auth.verify("demo", "demo"), "demo")
-            self.assertEqual(auth.verify("", token), "")
+            self.assertEqual(auth.verify("", token2), "")
+            self.assertIsNone(auth.verify("", token1))
             self.assertIsNone(auth.delete_token("test"))
             self.assertIsNone(auth.delete_token("demo"))
-            self.assertIsNone(auth.delete_token(token))
-            self.assertIsNone(auth.delete_token(token))
+            self.assertIsNone(auth.delete_token(token1))
+            self.assertIsNone(auth.delete_token(token2))
+            self.assertIsNone(auth.delete_token(token2))
+            self.assertIsNone(auth.verify("", token1))
+            self.assertIsNone(auth.verify("", token2))
 
     @mock.patch.object(authorize.BasicConfig, "dumpf", mock.MagicMock())
     @mock.patch.object(authorize.LdapConfig, "client")
@@ -86,17 +92,24 @@ class TestAuthInit(unittest.TestCase):
         with mock.patch.object(authorize.BasicConfig, "loadf") as mock_loadf:
             mock_loadf.side_effect = [authorize.BasicConfig(self.path, self.ldap_datas)]  # noqa:E501
             auth = authorize.AuthInit.from_file()
-            token = auth.generate_token()
-            mock_client.signed.side_effect = [None, Exception(), MagicMock(entry_dn="demo")]  # noqa:E501
+            token1 = auth.generate_token()
+            self.assertIsInstance(token2 := auth.update_token(token1), str)
+            self.assertIsNone(auth.update_token(token1))
+            assert isinstance(token2, str)
+            mock_client.signed.side_effect = [None, Exception(), mock.MagicMock(entry_dn="demo")]  # noqa:E501
             self.assertIsNone(auth.verify("", "test"))
             self.assertIsNone(auth.verify("test", "unit"))
             self.assertIsNone(auth.verify("demo", "test"))
             self.assertEqual(auth.verify("demo", "demo"), "demo")
-            self.assertEqual(auth.verify("", token), "")
+            self.assertEqual(auth.verify("", token2), "")
+            self.assertIsNone(auth.verify("", token1))
             self.assertIsNone(auth.delete_token("test"))
             self.assertIsNone(auth.delete_token("demo"))
-            self.assertIsNone(auth.delete_token(token))
-            self.assertIsNone(auth.delete_token(token))
+            self.assertIsNone(auth.delete_token(token1))
+            self.assertIsNone(auth.delete_token(token2))
+            self.assertIsNone(auth.delete_token(token2))
+            self.assertIsNone(auth.verify("", token1))
+            self.assertIsNone(auth.verify("", token2))
 
     @mock.patch.object(authorize.BasicConfig, "dumpf", mock.MagicMock())
     def test_user(self):
