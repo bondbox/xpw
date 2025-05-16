@@ -106,7 +106,24 @@ class SessionKeys(ItemPool[str, SessionUser]):
             return None
 
     def verify(self, session_id: str, secret_key: Optional[str] = None) -> bool:  # noqa:E501
-        return (user := self.lookup(session_id, secret_key)) is not None and isinstance(user, str)  # noqa:E501
+        try:
+            item: CacheItem[str, SessionUser] = self[session_id]
+            user: SessionUser = super(CacheItem, item).data
+
+            if not secret_key:
+                secret_key = self.secret.key
+
+            if not user.verify(session_id, secret_key):
+                return False
+
+            for session in self.logged.get(user.identity, []):
+                if not self[session.session_id].expired:
+                    item.renew()  # only renew oneself
+                    return True
+
+            return False  # all sessions expired, pragma: no cover
+        except CacheMiss:
+            return False
 
     def sign_in(self, session_id: str, secret_key: Optional[str] = None, identity: str = "") -> str:  # noqa:E501
         user: SessionUser = self.search(session_id).data
