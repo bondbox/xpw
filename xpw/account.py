@@ -14,7 +14,9 @@ from typing import Optional
 
 from xkits_lib.unit import TimeUnit
 
+from xpw.authorize import ApiToken
 from xpw.authorize import AuthInit
+from xpw.authorize import Token as BaseToken
 from xpw.authorize import TokenAuth
 from xpw.authorize import UserToken
 from xpw.configure import DEFAULT_CONFIG_FILE
@@ -24,8 +26,8 @@ from xpw.session import SessionUser
 
 class Profile():
     class Token():
-        def __init__(self, token: UserToken):
-            self.__token: UserToken = token
+        def __init__(self, token: BaseToken):
+            self.__token: BaseToken = token
 
         @property
         def name(self) -> str:
@@ -69,9 +71,17 @@ class Profile():
 
     @property
     def tokens(self) -> Iterator[Token]:
-        for token in self.__accounts.members.tokens.values():
+        for token in self.__accounts.members.user_tokens.values():
             if token.user == self.username:
                 yield self.Token(token)
+
+    @property
+    def api_tokens(self) -> Iterator[Token]:
+        if not self.administrator:
+            raise PermissionError("administrator privileges are required")
+
+        for token in self.__accounts.members.api_tokens.values():
+            yield self.Token(token)
 
     @property
     def sessions(self) -> Iterator[Session]:
@@ -82,8 +92,14 @@ class Profile():
         self.__accounts.tickets.quit(self.username)
         return not any(self.sessions)
 
-    def create_token(self, note: str = "") -> UserToken:
-        return self.__accounts.members.generate_token(note=note, user=self.username)  # noqa:E501
+    def create_api_token(self, note: str, store: bool = True) -> ApiToken:
+        if not self.administrator:
+            raise PermissionError("administrator privileges are required")
+
+        return self.__accounts.members.create_api_token(note=note, store=store)
+
+    def create_token(self, note: str) -> UserToken:
+        return self.__accounts.members.generate_user_token(user=self.username, note=note)  # noqa:E501
 
     def update_token(self, token: str) -> Optional[UserToken]:
         found: bool = False
@@ -91,7 +107,7 @@ class Profile():
             if item.name == token:
                 found = True
                 break
-        return self.__accounts.members.update_token(name=token) if found else None  # noqa:E501
+        return self.__accounts.members.update_user_token(name=token) if found else None  # noqa:E501
 
     def delete_token(self, token: str) -> bool:
         found: bool = False
@@ -101,7 +117,7 @@ class Profile():
                 break
 
         if found:
-            self.__accounts.members.delete_token(name=token)
+            self.__accounts.members.delete_user_token(name=token)
 
         for item in self.tokens:
             if item.name == token:
@@ -191,11 +207,19 @@ class Account():  # pylint:disable=too-many-public-methods
               secret_key: Optional[str] = None
               ) -> Optional[SessionUser]:
         identity: Optional[str] = self.members.verify(username, password)
-        if username == "" and isinstance(identity, str) and identity != "":
+
+        if not isinstance(identity, str):
+            return None
+
+        if username == "":  # token login request
+            if identity == self.members.api_username:  # api without session
+                return SessionUser(session_id=session_id or "", secret_key=self.tickets.secret.key, identity=identity)  # noqa:E501
+            if identity == "":  # token not bound user
+                return None  # pragma: no cover
             username = identity
 
         if username != identity:
-            return None
+            return None  # pragma: no cover
 
         user: SessionUser = self.tickets.search(session_id).data
         self.tickets.sign_in(user.session_id, secret_key, username)
@@ -231,14 +255,14 @@ class Account():  # pylint:disable=too-many-public-methods
         if self.members.verify_password(username, password) == username and (profile := Profile(self, username)).logout():  # noqa:E501
             # step 2: delete all tokens associated with the user
             for name in [token.name for token in profile.tokens]:  # noqa:E501
-                self.members.delete_token(name)
+                self.members.delete_user_token(name)
             # step 3: delete the user account
             return self.members.delete_user(username, password)
         return False
 
     def create_token(self, session_id: str, secret_key: Optional[str] = None, note: str = "") -> Optional[UserToken]:  # noqa:E501
         """generate random token for authenticated user"""
-        return profile.create_token(note) if (profile := self.fetch(session_id, secret_key)) else None  # noqa:E501
+        return profile.create_token(note or f"{profile.identity}_token".upper()) if (profile := self.fetch(session_id, secret_key)) else None  # noqa:E501
 
     def update_token(self, session_id: str, secret_key: Optional[str] = None, token: str = "") -> Optional[UserToken]:  # noqa:E501
         """update token for authenticated user"""

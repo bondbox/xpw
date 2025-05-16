@@ -2,19 +2,31 @@
 
 from os.path import join
 from tempfile import TemporaryDirectory
+from typing import List
 import unittest
 
 from xpw import account
 from xpw import authorize
 
 
+def read_api_tokens(profile: account.Profile) -> List[account.Profile.Token]:
+    return list(profile.api_tokens)
+
+
 class TestAccount(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        cls.admin: str = "admin"
         cls.username: str = "demo"
         cls.password: str = "adc123456"
-        cls.datas = {"users": {cls.username: cls.password}}
+        cls.datas = {
+            "users": {
+                cls.username: cls.password,
+                cls.admin: cls.password,
+            },
+            "admin": {"user": cls.admin},
+        }
 
     @classmethod
     def tearDownClass(cls):
@@ -35,12 +47,44 @@ class TestAccount(unittest.TestCase):
         self.assertEqual(self.account.tickets.lifetime, 0.0)
         self.assertFalse(self.account.allow_register)
         self.assertFalse(self.account.allow_terminate)
-        self.assertEqual(self.account.administrators, [])
+        self.assertEqual(self.account.administrators, [self.admin])
         self.assertFalse(self.account.first_user_is_admin)
         self.assertFalse(self.account.allow_admin_create_user)
         self.assertFalse(self.account.allow_admin_delete_user)
 
-    def test_fetch(self):
+    def test_fetch_administrator(self):
+        self.assertIsNone(self.account.fetch(""))
+        self.assertIsNone(self.account.fetch(self.admin))
+        self.assertIsInstance(user := self.account.login(self.admin, self.password), account.SessionUser)  # noqa:E501
+        assert isinstance(user, account.SessionUser)
+        self.assertIsInstance(profile := self.account.fetch(user.session_id), account.Profile)  # noqa:E501
+        assert isinstance(profile, account.Profile)
+        self.assertEqual(profile.workspace, account.join(self.account.catalog, self.admin))  # noqa:E501
+        self.assertEqual(profile.catalog, self.account.catalog)
+        self.assertEqual(profile.identity, self.admin)
+        self.assertEqual(profile.username, self.admin)
+        self.assertTrue(profile.administrator)
+        self.assertIsInstance(token1 := profile.create_token("test"), account.UserToken)  # noqa:E501
+        self.assertIsInstance(token2 := profile.create_token("test"), account.UserToken)  # noqa:E501
+        for token in profile.tokens:
+            self.assertIsInstance(token, account.Profile.Token)
+            self.assertEqual(token.note, "test")
+        self.assertIsInstance(api_token := profile.create_api_token("api"), account.ApiToken)  # noqa:E501
+        for token in profile.api_tokens:
+            self.assertIsInstance(token, account.Profile.Token)
+            self.assertEqual(token.note, "api")
+        for session in profile.sessions:
+            self.assertIsInstance(session, account.Profile.Session)
+            self.assertIsInstance(session.session_id, str)
+        self.assertIsInstance(self.account.update_token(user.session_id, user.secret_key, token2.name), account.UserToken)  # noqa:E501
+        self.assertTrue(self.account.delete_token(user.session_id, user.secret_key, token1.name))  # noqa:E501
+        self.assertTrue(self.account.delete_token(user.session_id, user.secret_key, token2.name))  # noqa:E501
+        self.assertTrue(self.account.logout(user.session_id, user.secret_key))
+        self.assertIsNone(self.account.fetch(user.session_id, user.secret_key))
+        self.assertIsNone(self.account.fetch(user.session_id))
+        self.assertIsInstance(user := self.account.login("", api_token.hash), account.SessionUser)  # noqa:E501
+
+    def test_fetch_general_user(self):
         self.assertIsNone(self.account.fetch(""))
         self.assertIsNone(self.account.fetch(self.username))
         self.assertIsInstance(user := self.account.login(self.username, self.password), account.SessionUser)  # noqa:E501
@@ -57,6 +101,8 @@ class TestAccount(unittest.TestCase):
         for token in profile.tokens:
             self.assertIsInstance(token, account.Profile.Token)
             self.assertEqual(token.note, "test")
+        self.assertRaises(PermissionError, profile.create_api_token, "api")
+        self.assertRaises(PermissionError, read_api_tokens, profile)
         for session in profile.sessions:
             self.assertIsInstance(session, account.Profile.Session)
             self.assertIsInstance(session.session_id, str)
@@ -81,8 +127,7 @@ class TestAccount(unittest.TestCase):
         self.assertNotEqual(user1.session_id, user2.session_id)
         self.assertTrue(self.account.check(user2.session_id, user2.secret_key))
         self.assertTrue(self.account.check(user2.session_id))
-        self.assertFalse(self.account.logout(
-            user2.session_id, "abc1234567890"))
+        self.assertFalse(self.account.logout(user2.session_id, "abc1234567890"))  # noqa:E501
         self.assertTrue(self.account.logout(user2.session_id, user2.secret_key))  # noqa:E501
         self.assertFalse(self.account.check(user2.session_id, user2.secret_key))  # noqa:E501
         self.assertFalse(self.account.check(user2.session_id))
@@ -106,12 +151,12 @@ class TestAccount(unittest.TestCase):
         self.assertRaises(PermissionError, self.account.register, self.username, self.password)  # noqa:E501
         self.account.members.config.datas[account.Account.ACCOUNT_SECTION] = {"register": True}  # noqa:E501
         self.assertTrue(self.account.allow_register)
-        self.assertEqual(self.account.administrators, [])
+        self.assertEqual(self.account.administrators, [self.admin])
         self.assertRaises(ValueError, self.account.register, self.username, self.password)  # noqa:E501
         self.assertIsInstance(profile := self.account.register("username", "password"), account.Profile)  # noqa:E501
         self.assertRaises(ValueError, self.account.register, "user name", "password")  # noqa:E501
         self.assertRaises(ValueError, self.account.register, "", "password")
-        self.assertEqual(self.account.administrators, [])
+        self.assertEqual(self.account.administrators, [self.admin])
         assert isinstance(profile, account.Profile)
         self.assertEqual(profile.workspace, account.join(self.account.catalog, "username"))  # noqa:E501
         self.assertEqual(profile.catalog, self.account.catalog)
