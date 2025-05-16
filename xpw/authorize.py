@@ -1,5 +1,6 @@
 # coding:utf-8
 
+from os.path import exists
 from typing import Dict
 from typing import Optional
 from typing import Tuple
@@ -199,6 +200,6 @@ class AuthInit():  # pylint: disable=too-few-public-methods
 
     @classmethod
     def from_file(cls, path: str = DEFAULT_CONFIG_FILE) -> TokenAuth:
-        config: BasicConfig = BasicConfig.loadf(path)
+        config: BasicConfig = BasicConfig.loadf(path) if exists(path) else BasicConfig(path, {})  # noqa:E501
         method: str = config.datas.get("auth_method", Argon2Config.SECTION)
         return cls.METHODS[method](config)

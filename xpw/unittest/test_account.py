@@ -3,7 +3,6 @@
 from os.path import join
 from tempfile import TemporaryDirectory
 import unittest
-from unittest import mock
 
 from xpw import account
 from xpw import authorize
@@ -24,9 +23,7 @@ class TestAccount(unittest.TestCase):
     def setUp(self):
         self.temp = TemporaryDirectory()
         self.path = join(self.temp.name, "test.cfg")
-        with mock.patch.object(authorize.BasicConfig, "loadf") as mock_loadf:
-            mock_loadf.side_effect = [authorize.BasicConfig(self.path, self.datas)]  # noqa:E501
-            authorize.AuthInit.from_file().config.dumpf(self.path)
+        authorize.BasicConfig(self.path, self.datas).dumpf(self.path)
         self.account = account.Account.from_file(self.path)
 
     def tearDown(self):

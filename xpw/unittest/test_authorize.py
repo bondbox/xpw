@@ -63,6 +63,7 @@ class TestAuthInit(unittest.TestCase):
     def tearDown(self):
         pass
 
+    @mock.patch.object(authorize, "exists", mock.MagicMock(side_effect=[True]))
     @mock.patch.object(authorize.BasicConfig, "dumpf", mock.MagicMock())
     def test_verify(self):
         with mock.patch.object(authorize.BasicConfig, "loadf") as mock_loadf:
@@ -89,6 +90,7 @@ class TestAuthInit(unittest.TestCase):
             self.assertIsNone(auth.verify("", token2.hash))
             self.assertIsNone(auth.verify("", token3.hash))
 
+    @mock.patch.object(authorize, "exists", mock.MagicMock(side_effect=[True]))
     @mock.patch.object(authorize.BasicConfig, "dumpf", mock.MagicMock())
     @mock.patch.object(authorize.LdapConfig, "client")
     def test_ldap_verify(self, mock_client):
@@ -117,6 +119,7 @@ class TestAuthInit(unittest.TestCase):
             self.assertIsNone(auth.verify("", token2.hash))
             self.assertIsNone(auth.verify("", token3.hash))
 
+    @mock.patch.object(authorize, "exists", mock.MagicMock(side_effect=[True]))
     @mock.patch.object(authorize.BasicConfig, "dumpf", mock.MagicMock())
     def test_user(self):
         with mock.patch.object(authorize.BasicConfig, "loadf") as mock_loadf:
