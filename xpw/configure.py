@@ -5,7 +5,8 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
-from xkits_file import SafeKits
+from xkits_file import SafeRead
+from xkits_file import SafeWrite
 
 from xpw.ldapauth import LdapClient
 from xpw.ldapauth import LdapInit
@@ -46,10 +47,10 @@ class BasicConfig():
     @classmethod
     def loadf(cls, path: str = DEFAULT_CONFIG_FILE) -> "BasicConfig":
         """load config from toml file"""
-        from toml import load  # pylint: disable=import-outside-toplevel
+        from toml import loads  # pylint: disable=import-outside-toplevel
 
-        assert SafeKits.restore(path=path), f"failed to restore config file: '{path}'"  # noqa:E501
-        return cls(path=path, datas=load(path))
+        with SafeRead(path, encoding="utf-8") as rhdl:
+            return cls(path=path, datas=loads(rhdl.read()))
 
     def dumps(self) -> str:
         """dump config to toml string"""
@@ -59,11 +60,8 @@ class BasicConfig():
 
     def dumpf(self, path: Optional[str] = None) -> None:
         """dump config to toml file"""
-        file: str = path or self.path
-        assert SafeKits.create_backup(path=file, copy=False), f"failed to backup config file: '{file}'"  # noqa:E501
-        with open(file, "w", encoding="utf-8") as whdl:
+        with SafeWrite(path or self.path, encoding="utf-8", truncate=True) as whdl:  # noqa:E501
             whdl.write(self.dumps())
-        assert SafeKits.delete_backup(path=file), f"failed to delete config backup file: '{file}'"  # noqa:E501
 
 
 class Argon2Config(BasicConfig):

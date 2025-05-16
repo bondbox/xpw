@@ -24,18 +24,18 @@ class TestBasicConfig(unittest.TestCase):
     def tearDown(self):
         pass
 
-    @mock.patch("toml.load")
-    def test_loadf(self, mock_load):
-        mock_load.side_effect = [self.datas]
+    @mock.patch.object(configure, "SafeRead", mock.MagicMock())
+    @mock.patch("toml.loads")
+    def test_loadf(self, mock_loads):
+        mock_loads.side_effect = [self.datas]
         self.assertIsInstance(configure.BasicConfig.loadf(), configure.BasicConfig)  # noqa:E501
 
     def test_dumps(self):
         self.assertIsInstance(self.config.dumps(), str)
 
-    @mock.patch.object(configure, "open")
-    def test_dumpf(self, mock_open):
-        with mock.mock_open(mock_open):
-            self.assertIsNone(self.config.dumpf())
+    @mock.patch.object(configure, "SafeWrite", mock.MagicMock())
+    def test_dumpf(self):
+        self.assertIsNone(self.config.dumpf())
 
 
 class TestLdapConfig(unittest.TestCase):
