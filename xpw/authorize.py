@@ -6,6 +6,8 @@ from typing import Dict
 from typing import Optional
 from typing import Tuple
 
+from xkits_logger import Logger
+
 from xpw.configure import Argon2Config
 from xpw.configure import BasicConfig
 from xpw.configure import DEFAULT_CONFIG_FILE
@@ -134,6 +136,8 @@ class TokenAuth():
             tokens: Dict[str, Tuple[str, str, str]] = self.api_options[self.TOKEN_SECTION]  # noqa:E501
             tokens[api_token.name] = api_token.dump()
             self.config.dumpf()
+        elif token == "":
+            Logger.stdout_green(f"Generate one-time api token: {api_token.hash}")  # noqa:E501
         return api_token
 
     def delete_api_token(self, name: str) -> None:

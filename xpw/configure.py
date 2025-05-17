@@ -7,6 +7,7 @@ from typing import Optional
 
 from xkits_file import SafeRead
 from xkits_file import SafeWrite
+from xkits_logger import Logger
 
 from xpw.ldapauth import LdapClient
 from xpw.ldapauth import LdapInit
@@ -70,6 +71,7 @@ class BasicConfig():
         username: str = "demo"
         alphanum: str = string.ascii_letters + string.digits
         password: str = Pass.random_generate(32, alphanum).value
+        Logger.stdout_green(f"Generate default username and password: '{username}', '{password}'")  # noqa:E501
         return cls(path=path, datas={"users": {username: password}})
 
 
