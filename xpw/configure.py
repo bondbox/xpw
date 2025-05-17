@@ -63,12 +63,20 @@ class BasicConfig():
         with SafeWrite(path or self.path, encoding="utf-8", truncate=True) as whdl:  # noqa:E501
             whdl.write(self.dumps())
 
+    @classmethod
+    def new(cls, path: str = DEFAULT_CONFIG_FILE) -> "BasicConfig":
+        import string  # pylint: disable=import-outside-toplevel
+
+        username: str = "demo"
+        alphanum: str = string.ascii_letters + string.digits
+        password: str = Pass.random_generate(32, alphanum).value
+        return cls(path=path, datas={"users": {username: password}})
+
 
 class Argon2Config(BasicConfig):
     SECTION = "argon2"
 
     def __init__(self, config: BasicConfig):
-        config.datas.setdefault(self.SECTION, {})
         config.datas.setdefault("users", {})
         super().__init__(config.path, config.datas)
 
@@ -79,28 +87,32 @@ class Argon2Config(BasicConfig):
         return self.generate(self.datas["users"][user])
 
     @property
+    def options(self) -> Dict[str, Any]:
+        return self.datas.setdefault(self.SECTION, {})
+
+    @property
     def time_cost(self) -> int:
-        return self.datas[self.SECTION].get("time_cost", Argon2Hasher.DEFAULT_TIME_COST)  # noqa:E501
+        return self.options.get("time_cost", Argon2Hasher.DEFAULT_TIME_COST)  # noqa:E501
 
     @property
     def memory_cost(self) -> int:
-        return self.datas[self.SECTION].get("memory_cost", Argon2Hasher.DEFAULT_MEMORY_COST)  # noqa:E501
+        return self.options.get("memory_cost", Argon2Hasher.DEFAULT_MEMORY_COST)  # noqa:E501
 
     @property
     def parallelism(self) -> int:
-        return self.datas[self.SECTION].get("parallelism", Argon2Hasher.DEFAULT_PARALLELISM)  # noqa:E501
+        return self.options.get("parallelism", Argon2Hasher.DEFAULT_PARALLELISM)  # noqa:E501
 
     @property
     def hash_len(self) -> int:
-        return self.datas[self.SECTION].get("hash_length", Argon2Hasher.DEFAULT_HASH_LENGTH)  # noqa:E501
+        return self.options.get("hash_length", Argon2Hasher.DEFAULT_HASH_LENGTH)  # noqa:E501
 
     @property
     def salt_len(self) -> int:
-        return self.datas[self.SECTION].get("salt_length", Argon2Hasher.DEFAULT_SALT_LENGTH)  # noqa:E501
+        return self.options.get("salt_length", Argon2Hasher.DEFAULT_SALT_LENGTH)  # noqa:E501
 
     @property
     def salt(self) -> str:
-        return self.datas[self.SECTION].get("salt", None)
+        return self.options.get("salt", None)
 
     def generate(self, password: str) -> Argon2Hasher:
         return Argon2Hasher(password) if password.startswith("$") else self.encode(password)  # noqa:E501
@@ -156,28 +168,32 @@ class LdapConfig(BasicConfig):
         super().__init__(config.path, config.datas)
 
     @property
+    def options(self) -> Dict[str, Any]:
+        return self.datas.setdefault(self.SECTION, {})
+
+    @property
     def server(self) -> str:
-        return self.datas[self.SECTION]["server"]
+        return self.options["server"]
 
     @property
     def bind_dn(self) -> str:
-        return self.datas[self.SECTION]["bind_username"]
+        return self.options["bind_username"]
 
     @property
     def bind_pw(self) -> str:
-        return self.datas[self.SECTION]["bind_password"]
+        return self.options["bind_password"]
 
     @property
     def base_dn(self) -> str:
-        return self.datas[self.SECTION]["search_base"]
+        return self.options["search_base"]
 
     @property
     def filter(self) -> str:
-        return self.datas[self.SECTION]["search_filter"]
+        return self.options["search_filter"]
 
     @property
     def attributes(self) -> List[str]:
-        return self.datas[self.SECTION]["search_attributes"]
+        return self.options["search_attributes"]
 
     @property
     def client(self) -> LdapClient:

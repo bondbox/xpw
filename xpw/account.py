@@ -278,3 +278,7 @@ class Account():  # pylint:disable=too-many-public-methods
                   secret_key: Optional[str] = None) -> "Account":
         auth: TokenAuth = AuthInit.from_file(path=abspath(config))
         return cls(auth=auth, lifetime=lifetime, secret_key=secret_key)
+
+
+if __name__ == "__main__":
+    Account.from_file().members.config.dumpf()

@@ -37,6 +37,9 @@ class TestBasicConfig(unittest.TestCase):
     def test_dumpf(self):
         self.assertIsNone(self.config.dumpf())
 
+    def test_new(self):
+        self.assertIsInstance(configure.BasicConfig.new(), configure.BasicConfig)  # noqa:E501
+
 
 class TestLdapConfig(unittest.TestCase):
 
