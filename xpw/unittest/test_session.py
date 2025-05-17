@@ -38,6 +38,29 @@ class TestSessionID(unittest.TestCase):
         self.assertFalse(self.session_id.verify("test"))
 
 
+class TestSessionUser(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.identity: str = "demo"
+        cls.session_id: str = "1234567890"
+        cls.secret_key: str = "abcdefghij"
+        cls.session = session.SessionUser(cls.session_id, cls.secret_key, cls.identity)  # noqa: E501
+
+    @classmethod
+    def tearDownClass(cls):
+        pass
+
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_str(self):
+        self.assertEqual(str(self.session), f"SessionUser(session_id={self.session_id}, identity={self.identity})")  # noqa: E501
+
+
 class TestSessionKeys(unittest.TestCase):
 
     @classmethod

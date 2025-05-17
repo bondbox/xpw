@@ -52,6 +52,9 @@ class SessionUser():
         self.__secret_key: str = secret_key
         self.__identity: str = identity
 
+    def __str__(self) -> str:
+        return f"{__class__.__name__}(session_id={self.__session_id}, identity={self.__identity})"
+
     @property
     def session_id(self) -> str:
         return self.__session_id
