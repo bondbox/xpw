@@ -98,6 +98,24 @@ class Profile():
 
         return self.__accounts.members.create_api_token(note=note, store=store)
 
+    def delete_api_token(self, token: str) -> bool:
+        if not self.administrator:
+            raise PermissionError("administrator privileges are required")
+
+        found: bool = False
+        for item in self.api_tokens:
+            if item.name == token:
+                found = True
+                break
+
+        if found:
+            self.__accounts.members.delete_api_token(name=token)
+
+        for item in self.api_tokens:
+            if item.name == token:
+                return False  # pragma: no cover
+        return True
+
     def create_token(self, note: str) -> UserToken:
         return self.__accounts.members.generate_user_token(user=self.username, note=note)  # noqa:E501
 

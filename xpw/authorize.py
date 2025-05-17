@@ -136,6 +136,22 @@ class TokenAuth():
             self.config.dumpf()
         return api_token
 
+    def delete_api_token(self, name: str) -> None:
+        tokens: Dict[str, Tuple[str, str, str]] = self.config.datas[self.API_SECTION][self.TOKEN_SECTION]  # noqa:E501
+        if token := tokens.get(name):
+            del self.api_tokens[token[1]]
+            del tokens[name]
+            self.config.dumpf()
+        else:
+            hash: Optional[str] = None  # pylint:disable=redefined-builtin
+            for token in self.api_tokens.values():
+                if token.name == name:
+                    hash = token.hash
+                    break
+            if isinstance(hash, str):
+                del self.api_tokens[hash]
+        assert name not in self.config.datas[self.TOKEN_SECTION]
+
     def verify_api_token(self, hash: str) -> Optional[str]:  # noqa:E501, pylint:disable=W0622
         return token.user if (token := self.api_tokens.get(hash)) else None
 

@@ -69,7 +69,8 @@ class TestAccount(unittest.TestCase):
         for token in profile.tokens:
             self.assertIsInstance(token, account.Profile.Token)
             self.assertEqual(token.note, "test")
-        self.assertIsInstance(api_token := profile.create_api_token("api"), account.ApiToken)  # noqa:E501
+        self.assertIsInstance(api_token1 := profile.create_api_token("api", store=False), account.ApiToken)  # noqa:E501
+        self.assertIsInstance(api_token2 := profile.create_api_token("api", store=True), account.ApiToken)  # noqa:E501
         for token in profile.api_tokens:
             self.assertIsInstance(token, account.Profile.Token)
             self.assertEqual(token.note, "api")
@@ -82,7 +83,12 @@ class TestAccount(unittest.TestCase):
         self.assertTrue(self.account.logout(user.session_id, user.secret_key))
         self.assertIsNone(self.account.fetch(user.session_id, user.secret_key))
         self.assertIsNone(self.account.fetch(user.session_id))
-        self.assertIsInstance(user := self.account.login("", api_token.hash), account.SessionUser)  # noqa:E501
+        self.assertIsInstance(self.account.login("", api_token1.hash), account.SessionUser)  # noqa:E501
+        self.assertIsInstance(self.account.login("", api_token2.hash), account.SessionUser)  # noqa:E501
+        self.assertTrue(profile.delete_api_token(api_token1.name))
+        self.assertTrue(profile.delete_api_token(api_token2.name))
+        self.assertIsNone(self.account.login("", api_token1.hash))
+        self.assertIsNone(self.account.login("", api_token2.hash))
 
     def test_fetch_general_user(self):
         self.assertIsNone(self.account.fetch(""))
@@ -112,6 +118,7 @@ class TestAccount(unittest.TestCase):
         self.assertTrue(self.account.logout(user.session_id, user.secret_key))
         self.assertIsNone(self.account.fetch(user.session_id, user.secret_key))
         self.assertIsNone(self.account.fetch(user.session_id))
+        self.assertRaises(PermissionError, profile.delete_api_token, "api")
 
     def test_login_and_logout(self):
         self.assertIsNone(self.account.login(self.username, "test"))
