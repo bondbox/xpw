@@ -120,7 +120,7 @@ class TestAuthInit(unittest.TestCase):
             self.assertIsNone(auth.update_user_token("test_token"))
             assert isinstance(token2, authorize.UserToken)
             assert isinstance(token3, authorize.UserToken)
-            mock_client.signed.side_effect = [None, Exception(), mock.MagicMock(entry_dn="demo")]  # noqa:E501
+            mock_client.signed.side_effect = [None, Exception(), mock.MagicMock(uid="demo")]  # noqa:E501
             self.assertIsNone(auth.verify("", "test"))
             self.assertIsNone(auth.verify("test", "unit"))
             self.assertIsNone(auth.verify("demo", "test"))

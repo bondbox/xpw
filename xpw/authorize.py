@@ -262,7 +262,11 @@ class LdapAuth(TokenAuth):
                                          config.attributes, username,
                                          password or input("password: "))
             if entry:
-                return entry.entry_dn
+                from ldap3 import Attribute  # pylint:disable=C0415
+
+                name: str = self.config.attributes[0]
+                attr: Attribute = getattr(entry, name)
+                return str(attr)
         except Exception:  # pylint: disable=broad-exception-caught
             pass
         return None
