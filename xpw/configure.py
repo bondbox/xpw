@@ -21,13 +21,13 @@ DEFAULT_CONFIG_FILE = "xpwauth"
 class BasicConfig():
 
     def __init__(self, path: str, datas: CONFIG_DATA_TYPE):
+        if not (secret_key := datas.get("secret")):
+            secret_key = Pass.random_generate(64).value
+            Logger.stdout_green(f"Generate secret key: '{secret_key}'")
+
+        self.__secret_key: str = secret_key
         self.__datas: CONFIG_DATA_TYPE = datas
         self.__path: str = path
-
-        if "secret" not in self.datas:
-            secret_key: str = Pass.random_generate(64).value
-            self.datas.setdefault("secret", secret_key)
-            self.dumpf()
 
     @property
     def path(self) -> str:
@@ -39,7 +39,7 @@ class BasicConfig():
 
     @property
     def secret_key(self) -> str:
-        return self.datas["secret"]
+        return self.__secret_key
 
     @property
     def lifetime(self) -> int:
