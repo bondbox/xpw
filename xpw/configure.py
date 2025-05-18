@@ -79,8 +79,17 @@ class Argon2Config(BasicConfig):
     SECTION = "argon2"
 
     def __init__(self, config: BasicConfig):
-        config.datas.setdefault("users", {})
+        users: Dict[str, str] = config.datas.setdefault("users", {})
         super().__init__(config.path, config.datas)
+
+        store: bool = False
+        for username, password in users.items():
+            if (cipher := self.generate(password).hashed) != password:
+                users[username] = cipher
+                store = True
+
+        if store:
+            self.dumpf()
 
     def __contains__(self, user: str) -> bool:
         return user in self.datas["users"]
@@ -117,7 +126,7 @@ class Argon2Config(BasicConfig):
         return self.options.get("salt", None)
 
     def generate(self, password: str) -> Argon2Hasher:
-        return Argon2Hasher(password) if password.startswith("$") else self.encode(password)  # noqa:E501
+        return Argon2Hasher(password) if password.startswith("$argon2") else self.encode(password)  # noqa:E501
 
     def encode(self, password: str) -> Argon2Hasher:
         return Argon2Hasher.hash(password=password, salt=self.salt,
