@@ -129,8 +129,9 @@ class SessionKeys(ItemPool[str, SessionUser]):
             return False
 
     def sign_in(self, session_id: str, secret_key: Optional[str] = None, identity: str = "") -> str:  # noqa:E501
-        user: SessionUser = self.search(session_id).data
-        user.update(secret_key or self.secret.key, identity)
+        item: CacheItem[str, SessionUser] = self.search(session_id)
+        item.renew()  # ignore CacheExpired exception during login
+        (user := item.data).update(secret_key or self.secret.key, identity)
         self.logged.setdefault(user.identity, []).append(user)
         assert user in self.logged[user.identity]
         return user.secret_key
