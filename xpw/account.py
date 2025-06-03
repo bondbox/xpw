@@ -85,8 +85,8 @@ class Profile():
 
     @property
     def sessions(self) -> Iterator[Session]:
-        for session in self.__accounts.tickets.logged.get(self.username, []):
-            yield self.Session(session)
+        for session_id in self.__accounts.tickets.logged.get(self.username, []):  # noqa:E501
+            yield self.Session(self.__accounts.tickets[session_id].data)
 
     def logout(self) -> bool:
         self.__accounts.tickets.quit(self.username)

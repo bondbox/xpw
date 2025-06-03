@@ -53,7 +53,7 @@ class SessionUser():
         self.__identity: str = identity
 
     def __str__(self) -> str:
-        return f"{__class__.__name__}(session_id={self.__session_id}, identity={self.__identity})"
+        return f"{__class__.__name__}(session_id={self.__session_id}, identity={self.__identity})"  # noqa:E501
 
     @property
     def session_id(self) -> str:
@@ -80,11 +80,11 @@ class SessionKeys(ItemPool[str, SessionUser]):
 
     def __init__(self, secret_key: Optional[str] = None, lifetime: TimeUnit = 3600.0):  # noqa:E501
         self.__secret: Secret = Secret(secret_key or Pass.random_generate(64).value)  # noqa:E501
-        self.__logged: Dict[str, List[SessionUser]] = {}
+        self.__logged: Dict[str, List[str]] = {}
         super().__init__(lifetime=lifetime)
 
     @property
-    def logged(self) -> Dict[str, List[SessionUser]]:
+    def logged(self) -> Dict[str, List[str]]:
         return self.__logged
 
     @property
@@ -119,8 +119,8 @@ class SessionKeys(ItemPool[str, SessionUser]):
             if not user.verify(session_id, secret_key):
                 return False
 
-            for session in self.logged.get(user.identity, []):
-                if not self[session.session_id].expired:
+            for _session_id in self.logged.get(user.identity, []):
+                if not self[_session_id].expired:
                     item.renew()  # only renew oneself
                     return True
 
@@ -132,8 +132,9 @@ class SessionKeys(ItemPool[str, SessionUser]):
         item: CacheItem[str, SessionUser] = self.search(session_id)
         item.renew()  # ignore CacheExpired exception during login
         (user := item.data).update(secret_key or self.secret.key, identity)
-        self.logged.setdefault(user.identity, []).append(user)
-        assert user in self.logged[user.identity]
+        if user.session_id not in (logged := self.logged.setdefault(user.identity, [])):  # noqa:E501
+            logged.append(user.session_id)
+        assert session_id in self.logged[identity]
         return user.secret_key
 
     def sign_out(self, session_id: str) -> None:
@@ -141,6 +142,6 @@ class SessionKeys(ItemPool[str, SessionUser]):
         return self.quit(session.identity)
 
     def quit(self, identity: str) -> None:
-        for session in self.logged[identity]:
-            self.delete(session.session_id)
+        for session_id in self.logged[identity]:
+            self.delete(session_id)
         del self.logged[identity]
