@@ -77,6 +77,7 @@ class TestAccount(unittest.TestCase):
         for session in profile.sessions:
             self.assertIsInstance(session, account.Profile.Session)
             self.assertIsInstance(session.session_id, str)
+            self.assertIsInstance(session.expired, bool)
         self.assertIsInstance(self.account.update_token(user.session_id, user.secret_key, token2.name), account.UserToken)  # noqa:E501
         self.assertTrue(self.account.delete_token(user.session_id, user.secret_key, token1.name))  # noqa:E501
         self.assertTrue(self.account.delete_token(user.session_id, user.secret_key, token2.name))  # noqa:E501
@@ -112,6 +113,7 @@ class TestAccount(unittest.TestCase):
         for session in profile.sessions:
             self.assertIsInstance(session, account.Profile.Session)
             self.assertIsInstance(session.session_id, str)
+            self.assertIsInstance(session.expired, bool)
         self.assertIsInstance(self.account.update_token(user.session_id, user.secret_key, token2.name), account.UserToken)  # noqa:E501
         self.assertTrue(self.account.delete_token(user.session_id, user.secret_key, token1.name))  # noqa:E501
         self.assertTrue(self.account.delete_token(user.session_id, user.secret_key, token2.name))  # noqa:E501

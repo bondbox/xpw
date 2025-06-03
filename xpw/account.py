@@ -12,6 +12,7 @@ from typing import Iterator
 from typing import List
 from typing import Optional
 
+from xkits_lib.cache import CacheItem
 from xkits_lib.unit import TimeUnit
 
 from xpw.authorize import ApiToken
@@ -38,12 +39,16 @@ class Profile():
             return self.__token.note
 
     class Session():  # pylint:disable=too-few-public-methods
-        def __init__(self, session: SessionUser):
-            self.__session: SessionUser = session
+        def __init__(self, item: CacheItem[str, SessionUser]):
+            self.__item: CacheItem[str, SessionUser] = item
 
         @property
         def session_id(self) -> str:
-            return self.__session.session_id
+            return super(CacheItem, self.__item).data.session_id
+
+        @property
+        def expired(self) -> bool:
+            return self.__item.expired
 
     def __init__(self, accounts: "Account", username: str):  # noqa:E501
         self.__accounts: Account = accounts  # private
@@ -86,7 +91,7 @@ class Profile():
     @property
     def sessions(self) -> Iterator[Session]:
         for session_id in self.__accounts.tickets.logged.get(self.username, []):  # noqa:E501
-            yield self.Session(self.__accounts.tickets[session_id].data)
+            yield self.Session(self.__accounts.tickets[session_id])
 
     def logout(self) -> bool:
         self.__accounts.tickets.quit(self.username)
