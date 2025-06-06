@@ -21,6 +21,7 @@ from xpw.authorize import Token as BaseToken
 from xpw.authorize import TokenAuth
 from xpw.authorize import UserToken
 from xpw.configure import DEFAULT_CONFIG_FILE
+from xpw.session import SessionID
 from xpw.session import SessionKeys
 from xpw.session import SessionUser
 
@@ -244,9 +245,9 @@ class Account():  # pylint:disable=too-many-public-methods
         if username != identity:
             return None  # pragma: no cover
 
-        user: SessionUser = self.tickets.search(session_id).data
-        self.tickets.sign_in(user.session_id, secret_key, username)
-        return user
+        _session_id = session_id or SessionID.generate()
+        self.tickets.sign_in(_session_id, secret_key, username)
+        return self.tickets.get(_session_id).data
 
     def logout(self, session_id: str, secret_key: Optional[str] = None) -> bool:  # noqa:E501
         return profile.logout() if (profile := self.fetch(session_id, secret_key)) else False  # noqa:E501
