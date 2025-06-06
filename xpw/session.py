@@ -138,8 +138,9 @@ class SessionKeys(ItemPool[str, SessionUser]):
         return user.secret_key
 
     def sign_out(self, session_id: str) -> None:
-        session: SessionUser = self.get(session_id).data
-        return self.quit(session.identity)
+        item: CacheItem[str, SessionUser] = self.get(session_id)
+        user: SessionUser = super(CacheItem, item).data
+        return self.quit(user.identity)
 
     def quit(self, identity: str) -> None:
         for session_id in self.logged[identity]:
