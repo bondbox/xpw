@@ -61,7 +61,7 @@ class BasicConfig():
 
     def dumpf(self, path: Optional[str] = None) -> None:
         """dump config to toml file"""
-        with SafeWrite(path or self.path, encoding="utf-8", truncate=False) as whdl:  # noqa:E501
+        with SafeWrite(path or self.path, encoding="utf-8", truncate=True) as whdl:  # noqa:E501
             whdl.write(self.dumps())
 
     @classmethod
