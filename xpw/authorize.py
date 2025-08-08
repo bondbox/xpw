@@ -13,6 +13,8 @@ from xpw.configure import BasicConfig
 from xpw.configure import DEFAULT_CONFIG_FILE
 from xpw.configure import LdapConfig
 from xpw.password import Argon2Hasher
+from xpw.password import CharacterSet
+from xpw.password import Characters  # noqa:H306
 
 
 class Token():
@@ -58,10 +60,11 @@ class Token():
         return (str(uuid4()), note, hash or cls.generate(), user)
 
     @classmethod
-    def generate(cls) -> str:
+    def generate(cls, length: int = 64, characters: Characters = CharacterSet.ALPHANUMERIC) -> str:  # noqa:E501
+        """generate a random token"""
         from xpw.password import Pass  # pylint:disable=import-outside-toplevel
 
-        return Pass.random_generate(64, Pass.CharacterSet.ALPHANUMERIC).value
+        return Pass.random_generate(length=length, characters=characters).value
 
 
 class ApiToken(Token):
