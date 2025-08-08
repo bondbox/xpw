@@ -10,6 +10,7 @@ from xkits_lib.cache import CacheMiss
 from xkits_lib.cache import ItemPool
 from xkits_lib.unit import TimeUnit
 
+from xpw.password import Characters
 from xpw.password import Pass
 from xpw.password import Secret
 
@@ -41,9 +42,9 @@ class SessionID():
         return md5(user_agent.encode("utf-8")).hexdigest()
 
     @classmethod
-    def generate(cls) -> str:
-        """Generate a 32-bit hexadecimal random session_id"""
-        return Pass.random_generate(32, "0123456789abcdef").value
+    def generate(cls, length: int = 32, characters: Characters = "0123456789abcdef") -> str:  # noqa:E501
+        """generate a random session_id"""
+        return Pass.random_generate(length=length, characters=characters).value
 
 
 class SessionUser():
