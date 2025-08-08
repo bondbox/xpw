@@ -31,6 +31,9 @@ class TestSecret(unittest.TestCase):
     def test_eq(self):
         self.assertEqual(self.secret, "test")
 
+    def test_generate(self):
+        self.assertIsInstance(password.Secret.generate(), password.Secret)
+
 
 class TestPass(unittest.TestCase):
 

@@ -8,6 +8,20 @@ from typing import Optional
 from typing import Union
 
 
+class CharacterSet(IntEnum):
+    DIGITS = 1
+    LOWERCASE = 2
+    UPPERCASE = 4
+    PUNCTUATION = 8
+    LETTERS = LOWERCASE | UPPERCASE
+    ALPHANUMERIC = LETTERS | DIGITS
+    DEFAULT = DIGITS | LETTERS | PUNCTUATION
+    BASIC = LOWERCASE | DIGITS
+
+
+Characters = Union[str, CharacterSet]  # password characters type
+
+
 class Secret():
     """Hashed password digest"""
 
@@ -31,22 +45,16 @@ class Secret():
         """secret key"""
         return self.__key
 
+    @classmethod
+    def generate(cls, length: int = 64, characters: Characters = CharacterSet.DEFAULT) -> "Secret":  # noqa:E501
+        """generate a random secret key"""
+        return cls(key=Pass.random_generate(length=length, characters=characters).value)  # noqa:E501
+
 
 class Pass():
     """Password object"""
-    MIN_LENGTH: int = 4  # minimum password length
-
-    class CharacterSet(IntEnum):
-        DIGITS = 1
-        LOWERCASE = 2
-        UPPERCASE = 4
-        PUNCTUATION = 8
-        LETTERS = LOWERCASE | UPPERCASE
-        ALPHANUMERIC = LETTERS | DIGITS
-        DEFAULT = DIGITS | LETTERS | PUNCTUATION
-        BASIC = LOWERCASE | DIGITS
-    Characters = Union[str, CharacterSet]  # password characters type
     SUPERSET = string.digits + string.ascii_letters + string.punctuation
+    MIN_LENGTH: int = 4  # minimum password length
 
     class PasswordError(ValueError):
         def __init__(self, message: str):
@@ -115,13 +123,13 @@ class Pass():
             return cls.join(set(chars))
 
         characters: str = ""
-        if chars & cls.CharacterSet.DIGITS:
+        if chars & CharacterSet.DIGITS:
             characters += string.digits
-        if chars & cls.CharacterSet.LOWERCASE:
+        if chars & CharacterSet.LOWERCASE:
             characters += string.ascii_lowercase
-        if chars & cls.CharacterSet.UPPERCASE:
+        if chars & CharacterSet.UPPERCASE:
             characters += string.ascii_uppercase
-        if chars & cls.CharacterSet.PUNCTUATION:
+        if chars & CharacterSet.PUNCTUATION:
             characters += string.punctuation
         return characters
 
