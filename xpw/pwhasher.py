@@ -70,7 +70,7 @@ def run_cmd_encode(cmds: Command) -> int:
     return 0
 
 
-@CommandArgument("pwhasher", description="compute encoded hash or verify password")
+@CommandArgument("pwhasher", description="compute encoded hash or verify password")  # noqa:E501
 def add_cmd(_arg: ArgParser):
     pass
 
