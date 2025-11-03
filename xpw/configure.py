@@ -122,7 +122,7 @@ class Argon2Config(BasicConfig):
         return self.options.get("salt_length", Argon2Hasher.DEFAULT_SALT_LENGTH)  # noqa:E501
 
     @property
-    def salt(self) -> str:
+    def salt(self) -> Optional[str]:
         return self.options.get("salt", None)
 
     def generate(self, password: str) -> Argon2Hasher:
