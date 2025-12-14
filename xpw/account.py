@@ -297,10 +297,8 @@ class Account():  # pylint:disable=too-many-public-methods
         return profile.delete_token(token) if (profile := self.fetch(session_id, secret_key)) else False  # noqa:E501
 
     @classmethod
-    def from_file(cls, config: str = DEFAULT_CONFIG_FILE,
-                  lifetime: Optional[TimeUnit] = None,
-                  secret_key: Optional[str] = None) -> "Account":
-        auth: TokenAuth = AuthInit.from_file(path=abspath(config))
+    def from_file(cls, config: Optional[str] = None, lifetime: Optional[TimeUnit] = None, secret_key: Optional[str] = None) -> "Account":  # noqa:E501
+        auth: TokenAuth = AuthInit.from_file(path=abspath(config or DEFAULT_CONFIG_FILE))  # noqa:E501
         return cls(auth=auth, lifetime=lifetime, secret_key=secret_key)
 
 
