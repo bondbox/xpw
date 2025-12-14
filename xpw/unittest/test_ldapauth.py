@@ -1,8 +1,9 @@
 # coding:utf-8
 
-import unittest
-from unittest import mock
+from unittest import TestCase
+from unittest import main
 from unittest.mock import MagicMock
+from unittest.mock import patch
 
 import ldap3
 
@@ -24,7 +25,7 @@ class FakeEntry(ldap3.Entry):
         return FakeAttribute()
 
 
-class TestLdapClient(unittest.TestCase):
+class TestLdapClient(TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -41,7 +42,7 @@ class TestLdapClient(unittest.TestCase):
     def tearDown(self):
         pass
 
-    @mock.patch("ldap3.Connection")
+    @patch("ldap3.Connection")
     def test_search(self, mock_connection):
         fake_entry = FakeEntry()
         fake_connection = MagicMock()
@@ -49,14 +50,14 @@ class TestLdapClient(unittest.TestCase):
         mock_connection.side_effect = [fake_connection]
         self.assertIs(self.ldap.search("ou=users,dc=demo,dc=com", "(uid=*)", ["uid"], "demo"), fake_entry)  # noqa:E501
 
-    @mock.patch("ldap3.Connection")
+    @patch("ldap3.Connection")
     def test_verify(self, mock_connection):
         fake_connection = MagicMock()
         fake_connection.bind.side_effect = [Exception()]
         mock_connection.side_effect = [fake_connection]
         self.assertFalse(self.ldap.verify("demo", "demo"))
 
-    @mock.patch("ldap3.Connection")
+    @patch("ldap3.Connection")
     def test_signed(self, mock_connection):
         fake_entry = MagicMock()
         fake_entry.uid.values = ["test"]
@@ -66,7 +67,7 @@ class TestLdapClient(unittest.TestCase):
         self.assertIsNone(self.ldap.signed("ou=users,dc=demo,dc=com", "(uid=*)", ["uid"], "demo", "demo"))  # noqa:E501
 
 
-class TestLdapInit(unittest.TestCase):
+class TestLdapInit(TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -82,7 +83,7 @@ class TestLdapInit(unittest.TestCase):
     def tearDown(self):
         pass
 
-    @mock.patch.object(ldapauth, "LdapClient")
+    @patch.object(ldapauth, "LdapClient")
     def test_ldap(self, mock_client):
         fake_client = MagicMock()
         mock_client.side_effect = [fake_client]
@@ -90,4 +91,4 @@ class TestLdapInit(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    main()

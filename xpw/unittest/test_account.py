@@ -3,7 +3,8 @@
 from os.path import join
 from tempfile import TemporaryDirectory
 from typing import List
-import unittest
+from unittest import TestCase
+from unittest import main
 
 from xpw import account
 from xpw import authorize
@@ -13,7 +14,7 @@ def read_api_tokens(profile: account.Profile) -> List[account.Profile.Token]:
     return list(profile.api_tokens)
 
 
-class TestAccount(unittest.TestCase):
+class TestAccount(TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -203,3 +204,7 @@ class TestAccount(unittest.TestCase):
         self.assertFalse(self.account.check("2"))
         self.assertFalse(self.account.check("3"))
         self.assertFalse(self.account.terminate(self.username, self.password))
+
+
+if __name__ == "__main__":
+    main()

@@ -1,12 +1,13 @@
 # coding:utf-8
 
-import unittest
+from unittest import TestCase
+from unittest import main
 from unittest import mock
 
 from xpw import authorize
 
 
-class TestToken(unittest.TestCase):
+class TestToken(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.usr_token: authorize.UserToken = authorize.UserToken.create("demo", "test")  # noqa:E501
@@ -42,7 +43,7 @@ class TestToken(unittest.TestCase):
         self.assertEqual(self.usr_token.user, new_token.user)
 
 
-class TestAuthInit(unittest.TestCase):
+class TestAuthInit(TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -154,4 +155,4 @@ class TestAuthInit(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    main()

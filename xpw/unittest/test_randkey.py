@@ -1,11 +1,12 @@
 # coding:utf-8
 
-import unittest
+from unittest import TestCase
+from unittest import main
 
-from xpw.randkey import main
+from xpw import randkey
 
 
-class TestLocaleTemplate(unittest.TestCase):
+class TestLocaleTemplate(TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -22,12 +23,12 @@ class TestLocaleTemplate(unittest.TestCase):
         pass
 
     def test_main(self):
-        self.assertEqual(main("--enable-digit".split()), 0)
-        self.assertEqual(main("--enable-letter".split()), 0)
-        self.assertEqual(main("--enable-lowercase".split()), 0)
-        self.assertEqual(main("--enable-uppercase".split()), 0)
-        self.assertEqual(main("--enable-punctuation".split()), 0)
+        self.assertEqual(randkey.main("--enable-digit".split()), 0)
+        self.assertEqual(randkey.main("--enable-letter".split()), 0)
+        self.assertEqual(randkey.main("--enable-lowercase".split()), 0)
+        self.assertEqual(randkey.main("--enable-uppercase".split()), 0)
+        self.assertEqual(randkey.main("--enable-punctuation".split()), 0)
 
 
 if __name__ == "__main__":
-    unittest.main()
+    main()

@@ -1,12 +1,13 @@
 # coding:utf-8
 
 from hashlib import md5
-import unittest
+from unittest import TestCase
+from unittest import main
 
 from xpw import session
 
 
-class TestSessionID(unittest.TestCase):
+class TestSessionID(TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -38,7 +39,7 @@ class TestSessionID(unittest.TestCase):
         self.assertFalse(self.session_id.verify("test"))
 
 
-class TestSessionUser(unittest.TestCase):
+class TestSessionUser(TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -61,7 +62,7 @@ class TestSessionUser(unittest.TestCase):
         self.assertEqual(str(self.session), f"SessionUser(session_id={self.session_id}, identity={self.identity})")  # noqa: E501
 
 
-class TestSessionKeys(unittest.TestCase):
+class TestSessionKeys(TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -89,4 +90,4 @@ class TestSessionKeys(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    main()

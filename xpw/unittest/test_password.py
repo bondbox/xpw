@@ -1,12 +1,13 @@
 # coding:utf-8
 
-import unittest
+from unittest import TestCase
+from unittest import main
 from unittest import mock
 
 from xpw import password
 
 
-class TestSecret(unittest.TestCase):
+class TestSecret(TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -35,7 +36,7 @@ class TestSecret(unittest.TestCase):
         self.assertIsInstance(password.Secret.generate(), password.Secret)
 
 
-class TestPass(unittest.TestCase):
+class TestPass(TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -93,7 +94,7 @@ class TestPass(unittest.TestCase):
                           password.Pass.dialog, 1)
 
 
-class TestSalt(unittest.TestCase):
+class TestSalt(TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -113,7 +114,7 @@ class TestSalt(unittest.TestCase):
         self.assertIsInstance(password.Salt.generate("test"), password.Salt)
 
 
-class TestArgon2Hasher(unittest.TestCase):
+class TestArgon2Hasher(TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -143,4 +144,4 @@ class TestArgon2Hasher(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    main()

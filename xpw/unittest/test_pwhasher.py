@@ -1,13 +1,14 @@
 # coding:utf-8
 
 from errno import EINVAL
-import unittest
+from unittest import TestCase
+from unittest import main
 from unittest import mock
 
 from xpw import pwhasher
 
 
-class TestLocaleTemplate(unittest.TestCase):
+class TestLocaleTemplate(TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -35,4 +36,4 @@ class TestLocaleTemplate(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    main()

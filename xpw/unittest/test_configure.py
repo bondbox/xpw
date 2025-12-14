@@ -1,12 +1,13 @@
 # coding:utf-8
 
-import unittest
+from unittest import TestCase
+from unittest import main
 from unittest import mock
 
 from xpw import configure
 
 
-class TestBasicConfig(unittest.TestCase):
+class TestBasicConfig(TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -41,7 +42,7 @@ class TestBasicConfig(unittest.TestCase):
         self.assertIsInstance(configure.BasicConfig.new(), configure.BasicConfig)  # noqa:E501
 
 
-class TestLdapConfig(unittest.TestCase):
+class TestLdapConfig(TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -77,4 +78,4 @@ class TestLdapConfig(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    main()
