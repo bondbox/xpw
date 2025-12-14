@@ -226,10 +226,7 @@ class Account():  # pylint:disable=too-many-public-methods
     def check(self, session_id: str, secret_key: Optional[str] = None) -> bool:
         return self.tickets.verify(session_id, secret_key)
 
-    def login(self, username: str, password: str,
-              session_id: Optional[str] = None,
-              secret_key: Optional[str] = None
-              ) -> Optional[SessionUser]:
+    def login(self, username: str, password: str, session_id: Optional[str] = None, secret_key: Optional[str] = None) -> Optional[SessionUser]:  # noqa:E501
         identity: Optional[str] = self.members.verify(username, password)
 
         if not isinstance(identity, str):
