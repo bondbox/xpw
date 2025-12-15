@@ -247,7 +247,7 @@ class Account():  # pylint:disable=too-many-public-methods
         return self.tickets.get(_session_id).data
 
     def logout(self, session_id: str, secret_key: Optional[str] = None) -> bool:  # noqa:E501
-        return profile.logout() if (profile := self.fetch(session_id, secret_key)) else False  # noqa:E501
+        return profile.logout() if (profile := self.fetch(session_id, secret_key)) else True  # noqa:E501
 
     def register(self, username: str, password: str) -> Optional[Profile]:
         if not self.allow_register:

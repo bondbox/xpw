@@ -137,7 +137,8 @@ class TestAccount(TestCase):
         self.assertNotEqual(user1.session_id, user2.session_id)
         self.assertTrue(self.account.check(user2.session_id, user2.secret_key))
         self.assertTrue(self.account.check(user2.session_id))
-        self.assertFalse(self.account.logout(user2.session_id, "abc1234567890"))  # noqa:E501
+        self.assertTrue(self.account.logout(user2.session_id, "abc1234567890"))  # noqa:E501
+        self.assertTrue(self.account.logout(user2.session_id, user2.secret_key))  # noqa:E501
         self.assertTrue(self.account.logout(user2.session_id, user2.secret_key))  # noqa:E501
         self.assertFalse(self.account.check(user2.session_id, user2.secret_key))  # noqa:E501
         self.assertFalse(self.account.check(user2.session_id))
