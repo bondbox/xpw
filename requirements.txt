@@ -1,4 +1,4 @@
-xkits-command>=0.5
+xkits-command>=0.5.3
 xkits-file>=0.6
 xkits-lib>=0.4
 argon2-cffi
