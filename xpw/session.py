@@ -68,9 +68,10 @@ class SessionUser():
     def identity(self) -> str:
         return self.__identity
 
-    def update(self, secret_key: str, identity: str = "") -> None:
+    def update(self, secret_key: str, identity: Optional[str] = None) -> None:
         self.__secret_key = secret_key
-        self.__identity = identity
+        if isinstance(identity, str):
+            self.__identity = identity
 
     def verify(self, session_id: str, secret_key: str) -> bool:
         return self.session_id == session_id and self.secret_key == secret_key

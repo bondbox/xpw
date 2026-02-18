@@ -242,7 +242,7 @@ class Account():  # pylint:disable=too-many-public-methods
         if username != identity:
             return None  # pragma: no cover
 
-        _session_id = session_id or SessionID.generate()
+        _session_id: str = session_id or SessionID.generate()
         self.tickets.sign_in(_session_id, secret_key, username)
         return self.tickets.get(_session_id).data
 
