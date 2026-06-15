@@ -2,7 +2,7 @@ name = "xpw"
 home = "https://github.com/bondbox/xpw/"
 description = "Password management and authentication"
 keywords = [ "access", "auth", "authentication", "ldap", "password",]
-version = "0.15.1"
+version = "0.16"
 
 [authors]
 
