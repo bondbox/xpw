@@ -5,8 +5,8 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
-from xkits_file import SafeRead
-from xkits_file import SafeWrite
+from xkits_file.safefile import SafeRead
+from xkits_file.safefile import SafeWrite
 from xkits_logger import Logger
 
 from xpw.ldapauth import LdapClient

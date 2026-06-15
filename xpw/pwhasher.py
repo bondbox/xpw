@@ -9,7 +9,7 @@ from xkits_command import Command
 from xkits_command import CommandArgument
 from xkits_command import CommandExecutor
 
-from xpw.attribute import __urlhome__
+from xpw.attribute import __project_home__
 from xpw.attribute import __version__
 from xpw.password import Argon2Hasher
 from xpw.password import Pass
@@ -83,4 +83,4 @@ def run_cmd(cmds: Command) -> int:  # pylint: disable=unused-argument
 def main(argv: Optional[Sequence[str]] = None) -> int:
     cmds = Command()
     cmds.version = __version__
-    return cmds.run(root=add_cmd, argv=argv, epilog=f"For more, please visit {__urlhome__}.")  # noqa:E501
+    return cmds.run(root=add_cmd, argv=argv, epilog=f"For more, please visit {__project_home__}.")  # noqa:E501

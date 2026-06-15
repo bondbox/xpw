@@ -1,10 +1,11 @@
 # coding:utf-8
 
-__project__ = "xpw"
-__version__ = "0.15.1"
-__urlhome__ = "https://github.com/bondbox/xpw/"
-__description__ = "Password management and authentication"
+# project info
+__project_name__ = "xpw"
+__project_home__ = "https://github.com/bondbox/xpw/"
+__project_desc__ = "Password management and authentication"
 
-# author
-__author__ = "Mingzhe Zou"
-__author_email__ = "zoumingzhe@outlook.com"
+# package info
+__version__ = "0.15.1"
+__package_name__ = "xpw"
+__package_desc__ = "Password management and authentication"
