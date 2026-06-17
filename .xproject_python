@@ -10,11 +10,15 @@ keywords = [
 ]
 version = "0.16"
 
-[authors]
+[authors.zoumingzhe]
+name = "Mingzhe Zou"
+email = "zoumingzhe@outlook.com"
 
 [packages.xpw]
 requires_python = ">=3.8"
-authors = []
+authors = [
+    "zoumingzhe",
+]
 keywords = []
 requirements = [
     "argon2-cffi",

@@ -6,7 +6,9 @@ requires = [
 ]
 
 [project]
-authors = []
+authors = [
+    { name = "Mingzhe Zou", email = "zoumingzhe@outlook.com" },
+]
 classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
