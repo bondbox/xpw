@@ -1,14 +1,31 @@
 [build-system]
 build-backend = "hatchling.build"
-requires = [ "hatch-requirements-txt", "hatchling",]
+requires = [
+    "hatch-requirements-txt",
+    "hatchling",
+]
 
 [project]
 authors = []
-classifiers = [ "Programming Language :: Python", "Programming Language :: Python :: 3",]
+classifiers = [
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+]
 description = "Password management and authentication"
-dynamic = [ "dependencies", "version",]
-keywords = [ "access", "auth", "authentication", "ldap", "password",]
-license-files = [ "LICENSE",]
+dynamic = [
+    "dependencies",
+    "version",
+]
+keywords = [
+    "access",
+    "auth",
+    "authentication",
+    "ldap",
+    "password",
+]
+license-files = [
+    "LICENSE",
+]
 name = "xpw"
 requires-python = ">=3.8"
 
@@ -27,16 +44,26 @@ Homepage = "https://github.com/bondbox/xpw/"
 path = "xpw/attribute.py"
 
 [tool.hatch.build.targets.sdist]
-exclude = [ "xpw/unittest",]
-packages = [ "xpw",]
-
-[tool.hatch.build.targets.wheel]
-exclude = [ "xpw/unittest",]
-packages = [ "xpw",]
-
-[tool.hatch.metadata.hooks.requirements_txt]
-files = [ "requirements.txt",]
+exclude = [
+    "xpw/unittest",
+]
+packages = [
+    "xpw",
+]
 
 [tool.hatch.build.targets.sdist.force-include]
 
+[tool.hatch.build.targets.wheel]
+exclude = [
+    "xpw/unittest",
+]
+packages = [
+    "xpw",
+]
+
 [tool.hatch.build.targets.wheel.force-include]
+
+[tool.hatch.metadata.hooks.requirements_txt]
+files = [
+    "requirements.txt",
+]

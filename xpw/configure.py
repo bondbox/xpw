@@ -48,14 +48,14 @@ class BasicConfig():
     @classmethod
     def loadf(cls, path: str = DEFAULT_CONFIG_FILE) -> "BasicConfig":
         """load config from toml file"""
-        from toml import loads  # pylint: disable=import-outside-toplevel
+        from tomli import loads  # pylint: disable=import-outside-toplevel
 
         with SafeRead(path, encoding="utf-8") as rhdl:
             return cls(path=path, datas=loads(rhdl.read()))
 
     def dumps(self) -> str:
         """dump config to toml string"""
-        from toml import dumps  # pylint: disable=import-outside-toplevel
+        from tomli_w import dumps  # pylint: disable=import-outside-toplevel
 
         return dumps(self.datas)
 

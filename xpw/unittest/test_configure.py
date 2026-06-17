@@ -26,7 +26,7 @@ class TestBasicConfig(TestCase):
         pass
 
     @mock.patch.object(configure, "SafeRead", mock.MagicMock())
-    @mock.patch("toml.loads")
+    @mock.patch("tomli.loads")
     def test_loadf(self, mock_loads):
         mock_loads.side_effect = [self.datas]
         self.assertIsInstance(configure.BasicConfig.loadf(), configure.BasicConfig)  # noqa:E501

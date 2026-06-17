@@ -1,7 +1,13 @@
 name = "xpw"
 home = "https://github.com/bondbox/xpw/"
 description = "Password management and authentication"
-keywords = [ "access", "auth", "authentication", "ldap", "password",]
+keywords = [
+    "access",
+    "auth",
+    "authentication",
+    "ldap",
+    "password",
+]
 version = "0.16"
 
 [authors]
@@ -10,14 +16,25 @@ version = "0.16"
 requires_python = ">=3.8"
 authors = []
 keywords = []
-requirements = [ "xkits-command>=0.7", "xkits-file>=0.10", "xkits-lib>=0.5", "argon2-cffi", "ldap3", "toml",]
+requirements = [
+    "argon2-cffi",
+    "ldap3",
+    "xkits-command>=0.7",
+    "xkits-config-toml>=0.8",
+    "xkits-lib>=0.5",
+]
 max_complexity = 10
 max_line_length = 127
 
 [packages.xpw.modules.xpw]
 base = "xpw"
-omitted = [ "attribute.py", "unittest/*",]
-exclude = [ "unittest",]
+omitted = [
+    "attribute.py",
+    "unittest/*",
+]
+exclude = [
+    "unittest",
+]
 
 [packages.xpw.modules.xpw.include]
 
