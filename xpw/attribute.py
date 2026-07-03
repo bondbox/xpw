@@ -6,6 +6,6 @@ __project_home__ = "https://github.com/bondbox/xpw/"
 __project_desc__ = "Password management and authentication"
 
 # package info
-__version__ = "0.16"
+__version__ = "0.17"
 __package_name__ = "xpw"
 __package_desc__ = "Password management and authentication"
