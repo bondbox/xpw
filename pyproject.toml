@@ -25,11 +25,11 @@ keywords = [
     "ldap",
     "password",
 ]
-license-files = [
-    "LICENSE",
-]
 name = "xpw"
 requires-python = ">=3.8"
+
+[project.license]
+file = "LICENSE"
 
 [project.readme]
 content-type = "text/markdown"
@@ -42,9 +42,6 @@ pwhasher = "xpw.pwhasher:main"
 [project.urls]
 Homepage = "https://github.com/bondbox/xpw/"
 
-[tool.hatch.version]
-path = "xpw/attribute.py"
-
 [tool.hatch.build.targets.sdist]
 exclude = [
     "xpw/unittest",
@@ -52,8 +49,6 @@ exclude = [
 packages = [
     "xpw",
 ]
-
-[tool.hatch.build.targets.sdist.force-include]
 
 [tool.hatch.build.targets.wheel]
 exclude = [
@@ -63,9 +58,10 @@ packages = [
     "xpw",
 ]
 
-[tool.hatch.build.targets.wheel.force-include]
-
 [tool.hatch.metadata.hooks.requirements_txt]
 files = [
     "requirements.txt",
 ]
+
+[tool.hatch.version]
+path = "xpw/attribute.py"
